@@ -1,7 +1,7 @@
 setwd(here::here("analysis", "hunter_tumor", "code")) 
 
-source("../../../R/curve_finder_i_try.R")
-source("../../../R/helpers.R")
+#source("../../../R/curve_finder_i_try.R")
+#source("../../../R/helpers.R")
 
 library(ggplot2)
 
@@ -36,7 +36,7 @@ xy_small <- cbind(
 )
 
 # Do NOT flip y here, because CurveFinderInteractive2 does it
-fit <- CurveFinderInteractive2(
+fit <- MorphoGAM:::CurveFinderInteractive2(
   xy = xy_small,
   loop = TRUE,
   image_path = image_path,
@@ -180,7 +180,9 @@ top_genes <- names(sort(sample.var, decreasing = TRUE))[1:2000]
 mat_r <- mat_r[top_genes,]
 rownames(mat_r) <- make.unique(rownames(mat_r))
 
-mgam <- MorphoGAM(Y=mat_r,
+mat_r <- as.matrix(mat_r)
+
+mgam <- MorphoGAM::MorphoGAM(Y=mat_r,
                   curve.fit = fit,
                   design = y ~ s(t) + s(r))
 
@@ -190,16 +192,24 @@ plot(fit$xyt$r, mat_r[4,])
 peak_r_location <- fit$xyt$r[apply(mgam$fxs.r, 1, which.max)]
 
 rownames(mat_r)[order(abs(peak_r_location - 0.5), decreasing = FALSE)[1:10]]
+names(peak_r_location) <- rownames(mat_r)
+which(peak_r_location < 0.6 & mgam$results$peak.r > log(2))
 
-plot(fit$xyt$r, mat_r["lygl1",])
+plot(fit$xyt$r, mat_r["pgam2",])
 
 plot(fit$xyt$t, mat_r["vmhc",])
 
+peak_t_location <- fit$xyt$t[apply(mgam$fxs.t, 1, which.max)]
+names(peak_t_location) <- rownames(mat_r)
 
+which(peak_t_location > 0.2 & peak_t_location < 0.7 & mgam$results$peak.t > log(2) &
+  peak_r_location < 0.6 & mgam$results$peak.r > log(2))
 
-data.frame(x=fit$xyt$x, y=fit$xyt$y, color=mat_r["pvalb4",]) |>
+data.frame(x=fit$xyt$x, y=fit$xyt$y, color=mat_r["CABZ01024686.1",]) |>
   ggplot(aes(x=x,y=y,color=color)) + geom_point() +
   scale_color_gradient(low="lightgrey", high="red") + theme_void()
 
+plot(fit$xyt$t, mgam$fxs.t["rbp4",])
+plot(fit$xyt$r, mgam$fxs.r["rbp4",])
 
 plot(fit$xyt$t, mat_r["pvalb4",])
