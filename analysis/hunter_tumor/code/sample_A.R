@@ -1,4 +1,5 @@
-setwd(here::here("analysis", "hunter_tumor", "code")) 
+
+setwd(here::here("analysis/hunter_tumor/code"))
 
 #source("../../../R/curve_finder_i_try.R")
 #source("../../../R/helpers.R")
@@ -195,7 +196,7 @@ rownames(mat_r)[order(abs(peak_r_location - 0.5), decreasing = FALSE)[1:10]]
 names(peak_r_location) <- rownames(mat_r)
 which(peak_r_location < 0.6 & mgam$results$peak.r > log(2))
 
-plot(fit$xyt$r, mat_r["pgam2",])
+plot(fit$xyt$r, mat_r["icn",])
 
 plot(fit$xyt$t, mat_r["vmhc",])
 
@@ -213,3 +214,5 @@ plot(fit$xyt$t, mgam$fxs.t["rbp4",])
 plot(fit$xyt$r, mgam$fxs.r["rbp4",])
 
 plot(fit$xyt$t, mat_r["pvalb4",])
+
+which(peak_t_location > 0.2 & peak_t_location < 0.7 & mgam$results$peak.t > log(2))

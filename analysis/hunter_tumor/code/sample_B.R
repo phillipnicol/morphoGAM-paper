@@ -24,10 +24,11 @@ s <- small_h / full_h
 expected_w <- full_w * s
 pad_x <- (small_w - expected_w) / 2
 
+
 # manual correction: dots looked too far right
-#x_shift <- -5
-x_shift <- 0
-y_shift <- 20
+x_shift <- -5
+y_shift <- 15
+
 
 xy_small <- cbind(
   x = x_full * s + pad_x + x_shift,
@@ -35,12 +36,13 @@ xy_small <- cbind(
 )
 
 # Do NOT flip y here, because CurveFinderInteractive2 does it
-fit <- CurveFinderInteractive2(
+fit <- MorphoGAM:::CurveFinderInteractive2(
   xy = xy_small,
-  loop = FALSE,
+  loop = TRUE,
   image_path = image_path,
-  flip_y = TRUE
+  flip_y = FALSE
 )
+
 
 
 
@@ -165,7 +167,19 @@ data.frame(x=xy_small[,1], y=xy_small[,2], color=gene) |>
   ggplot(aes(x=x,y=y,color=color)) + geom_point() +
   scale_color_gradient(low="lightgrey", high="red") + theme_void()
 
-mgam <- MorphoGAM(Y=mat_r[1:1000,],
+mat_r <- as.matrix(mat_r)
+
+
+# Find top 2000 spatially variable genes
+#Change this later 
+sample.var <- apply(mat_r, 1, var)
+top_genes <- names(sort(sample.var, decreasing = TRUE))[1:2000]
+mat_r <- mat_r[top_genes,]
+rownames(mat_r) <- make.unique(rownames(mat_r))
+
+mat_r <- as.matrix(mat_r)
+
+mgam <- MorphoGAM::MorphoGAM(Y=mat_r,
                   curve.fit = fit,
                   design = y ~ s(t) + s(r))
 
