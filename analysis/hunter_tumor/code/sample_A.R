@@ -181,11 +181,14 @@ top_genes <- names(sort(sample.var, decreasing = TRUE))[1:2000]
 mat_r <- mat_r[top_genes,]
 rownames(mat_r) <- make.unique(rownames(mat_r))
 
+rs <- rowSums(mat_r) 
+mat_r <- mat_r[which(rs >= 10),]
+rownames(mat_r) <- make.unique(rownames(mat_r))
 mat_r <- as.matrix(mat_r)
 
 mgam <- MorphoGAM::MorphoGAM(Y=mat_r,
                   curve.fit = fit,
-                  design = y ~ s(t) + s(r))
+                  design = y ~ s(t, bs="cc") + s(r))
 
 
 plot(fit$xyt$r, mat_r[4,])
@@ -206,7 +209,7 @@ names(peak_t_location) <- rownames(mat_r)
 which(peak_t_location > 0.2 & peak_t_location < 0.7 & mgam$results$peak.t > log(2) &
   peak_r_location < 0.6 & mgam$results$peak.r > log(2))
 
-data.frame(x=fit$xyt$x, y=fit$xyt$y, color=mat_r["CABZ01024686.1",]) |>
+data.frame(x=fit$xyt$x, y=fit$xyt$y, color=mat_r["nkx3-1",]) |>
   ggplot(aes(x=x,y=y,color=color)) + geom_point() +
   scale_color_gradient(low="lightgrey", high="red") + theme_void()
 
@@ -216,3 +219,28 @@ plot(fit$xyt$r, mgam$fxs.r["rbp4",])
 plot(fit$xyt$t, mat_r["pvalb4",])
 
 which(peak_t_location > 0.2 & peak_t_location < 0.7 & mgam$results$peak.t > log(2))
+
+MorphoGAM:::plotFPCloading(mgam, curve.fit=fit, type="t", L=3, num_genes=10)
+
+MorphoGAM:::plotFPCloading(mgam, curve.fit=fit, type="r", L=1, num_genes=10)
+
+data.frame(x=fit$xyt$x, y=fit$xyt$y, color=mat_r["col1a1b",]) |>
+  ggplot(aes(x=x,y=y,color=color)) + geom_point() +
+  scale_color_gradient(low="lightgrey", high="red") + theme_void()
+
+gene <- "spp1"
+plot(fit$xyt$r, mat_r[gene,])
+plot(fit$xyt$r, mgam$fxs.r[gene,])
+plot(fit$xyt$t, mat_r[gene,])
+plot(fit$xyt$t, mgam$fxs.t[gene,])
+data.frame(x=fit$xyt$x, y=fit$xyt$y, color=mat_r[gene,]) |>
+  ggplot(aes(x=x,y=y,color=color)) + geom_point() +
+  scale_color_gradient(low="lightgrey", high="red") + theme_void()
+
+max.ix <- which.max(fit$xyt$r)
+min.ix <- which.min(fit$xyt$r)
+diff.stat <- apply(mgam$fxs.r, 1, function(fx) {
+  fx[max.ix] - fx[min.ix]
+})
+
+diff.stat.exp <- exp(mgam$results$intercept + diff.stat)

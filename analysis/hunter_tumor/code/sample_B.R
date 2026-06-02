@@ -40,9 +40,8 @@ fit <- MorphoGAM:::CurveFinderInteractive2(
   xy = xy_small,
   loop = TRUE,
   image_path = image_path,
-  flip_y = FALSE
+  flip_y = TRUE
 )
-
 
 
 
@@ -51,6 +50,8 @@ fit <- MorphoGAM:::CurveFinderInteractive2(
 p1 <- fit$curve.plot + ggtitle("Fitted curve along tumor boundary")
 
 t.smooth <- mgcv::gam(fit$xyt$t ~ s(fit$xyt$x, fit$xyt$y, bs="tp", k=100))
+
+fit$xyt$t <- predict(t.smooth)
 
 p2 <- data.frame(x=fit$xyt$x,y=fit$xyt$y,color=fit$xyt$t) |>
   ggplot(aes(x=x,y=y,color=color)) + geom_point() +
@@ -116,6 +117,9 @@ p <- ggplot() +
 p1 <- fit$curve.plot + ggtitle("Fitted curve along tumor boundary")
 p <- p + ggtitle("Second coordinate (distance from tumor edge)")
 
+kxs <- which(fit$xyt$r > 0.5)
+
+
 
 library(anndata)
 
@@ -154,6 +158,9 @@ cell_meta <- data.frame(
 head(cell_meta)
 
 
+#head(cell_meta)
+
+
 mat_r <- as(mat, "RsparseMatrix")
 
 jxs <- match(xy_raw[ixs,]$V1, colnames(mat_r))
@@ -161,6 +168,10 @@ jxs <- match(xy_raw[ixs,]$V1, colnames(mat_r))
 mat_r <- mat_r[,jxs]
 
 gene <- mat_r[which(rownames(mat_r) == "RPL41"),]
+
+fit$xyt <- fit$xyt[kxs,]
+mat_r <- mat_r[,kxs]
+
 
 
 data.frame(x=xy_small[,1], y=xy_small[,2], color=gene) |>
@@ -184,3 +195,28 @@ mgam <- MorphoGAM::MorphoGAM(Y=mat_r,
                   design = y ~ s(t) + s(r))
 
 
+
+mgam$results |> arrange(desc(peak.r)) |> head(20)
+
+
+data.frame(x=fit$xyt$x, y=-fit$xyt$y, color=mat_r["krt91",]) |>
+  ggplot(aes(x=x,y=y,color=color)) + geom_point() +
+  scale_color_gradient(low="lightgrey", high="red") + theme_void()
+
+data.frame(x=fit$xyt$t, y=mgam$$fxs.t["lgals3bpb",])
+
+peak_r_location <- fit$xyt$r[apply(mgam$fxs.r, 1, which.max)]
+
+rownames(mat_r)[order(abs(peak_r_location - 0.5), decreasing = FALSE)[1:10]]
+names(peak_r_location) <- rownames(mat_r)
+which(peak_r_location < 0.6 & mgam$results$peak.r > log(2))
+
+peak_t_location <- fit$xyt$t[apply(mgam$fxs.t, 1, which.max)]
+names(peak_t_location) <- rownames(mat_r)
+
+which(peak_t_location > 0.2 & peak_t_location < 0.7 & mgam$results$peak.t > log(2) &
+  peak_r_location < 0.6 & mgam$results$peak.r > log(2))
+
+
+which( mgam$results$peak.t < log(2) &
+  peak_r_location < 0.6 & mgam$results$peak.r > log(2))
