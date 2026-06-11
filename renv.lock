@@ -530,7 +530,7 @@
       "RemoteUsername": "phillipnicol",
       "RemoteRepo": "MorphoGAM",
       "RemoteRef": "rev_plan",
-      "RemoteSha": "2069ad4e397ec13ec86b4487fcbfb855ca1e65cc",
+      "RemoteSha": "67a1bd1d420e6ca671166b8688f441ab1c56f3b0",
       "Requirements": [
         "RANN",
         "RSpectra",
@@ -545,7 +545,7 @@
         "princurve",
         "shiny"
       ],
-      "Hash": "592106d424b6d2283020fa9e4d3e6cc1"
+      "Hash": "c9fc1fdb34ba6761e8dd9ea3349c2095"
     },
     "R.methodsS3": {
       "Package": "R.methodsS3",
@@ -1939,6 +1939,28 @@
       ],
       "Hash": "376adbf359b416dbb30a76a2d2051ed5"
     },
+    "gprofiler2": {
+      "Package": "gprofiler2",
+      "Version": "0.2.4",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "RCurl",
+        "crosstalk",
+        "curl",
+        "dplyr",
+        "ggplot2",
+        "grDevices",
+        "grid",
+        "gridExtra",
+        "jsonlite",
+        "plotly",
+        "tidyr",
+        "viridisLite"
+      ],
+      "Hash": "b85b25ffd4ba91633a3d1d8154f3706c"
+    },
     "gratia": {
       "Package": "gratia",
       "Version": "0.11.2",
@@ -2831,6 +2853,38 @@
       ],
       "Hash": "01f28d4278f15c76cddbea05899c5d6f"
     },
+    "plotly": {
+      "Package": "plotly",
+      "Version": "4.12.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "RColorBrewer",
+        "base64enc",
+        "crosstalk",
+        "data.table",
+        "digest",
+        "dplyr",
+        "ggplot2",
+        "htmltools",
+        "htmlwidgets",
+        "httr",
+        "jsonlite",
+        "lazyeval",
+        "magrittr",
+        "promises",
+        "purrr",
+        "rlang",
+        "scales",
+        "tibble",
+        "tidyr",
+        "tools",
+        "vctrs",
+        "viridisLite"
+      ],
+      "Hash": "282f8b208bc767c67a370b47bff6ada7"
+    },
     "plyr": {
       "Package": "plyr",
       "Version": "1.8.9",
@@ -3117,13 +3171,13 @@
     },
     "renv": {
       "Package": "renv",
-      "Version": "1.2.3",
+      "Version": "1.0.11",
       "Source": "Repository",
-      "Repository": "RSPM",
+      "Repository": "CRAN",
       "Requirements": [
         "utils"
       ],
-      "Hash": "1bd9f58e1cfe27ce035933937c6f03de"
+      "Hash": "47623f66b4e80b3b0587bc5d7b309888"
     },
     "reprex": {
       "Package": "reprex",

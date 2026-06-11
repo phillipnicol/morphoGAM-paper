@@ -1,0 +1,25 @@
+name: spateo-release-morphogam
+channels:
+  - conda-forge
+  - bioconda
+  - nodefaults
+dependencies:
+  - python=3.10
+  - pip
+  - ipykernel
+  - jupyterlab
+  - setuptools<81
+  - numpy=2.2.6
+  - pandas=2.3.3
+  - scipy=1.14.1
+  - matplotlib=3.10.9
+  - anndata=0.10.9
+  - h5py=3.14.0
+  - mpi4py
+  - openmpi
+  - pip:
+      # PyPI currently does not expose installable spateo-release/dynamo-release
+      # builds, so use the official tagged GitHub source archives.
+      - alphashape
+      - https://github.com/aristoteleo/dynamo-release/archive/refs/tags/v1.5.3.tar.gz
+      - https://github.com/aristoteleo/spateo-release/archive/refs/tags/v1.1.0.tar.gz

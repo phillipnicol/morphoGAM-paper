@@ -1,0 +1,6 @@
+package: MorphoGAM
+remote: phillipnicol/MorphoGAM
+branch: rev_plan
+commit: 2069ad4e397ec13ec86b4487fcbfb855ca1e65cc
+version: 1.1.1
+updated_at: 2026-06-08 14:55:43

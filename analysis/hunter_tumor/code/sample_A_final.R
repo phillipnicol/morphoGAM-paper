@@ -63,7 +63,8 @@ p2 <- data.frame(x=fit$xyt$x,y=fit$xyt$y,color=fit$xyt$t) |>
   theme_bw() +
   ggtitle("Coordinate along curve") + labs(color="t")
 
-r <- ifelse(fit$xyt$r < 0.5, fit$xyt$r - 0.5, -1)
+#r <- ifelse(fit$xyt$r < 0.5, fit$xyt$r - 0.5, -1)
+r <- fit$xyt$r 
 
 p2 <- data.frame(x=fit$xyt$x,y=fit$xyt$y,color=r) |>
   ggplot(aes(x=x,y=y,color=color)) + geom_point() +
@@ -78,14 +79,14 @@ p2 <- data.frame(x=fit$xyt$x,y=fit$xyt$y,color=r) |>
 
 library(ggplot2)
 
-df <- data.frame(x=fit$xyt$x, y=-fit$xyt$y, r=fit$xyt$r)
+df <- data.frame(x=fit$xyt$x, y=fit$xyt$y, r=fit$xyt$r)
 
 p <- ggplot() +
 
   # Tumor (or graded) cells: r < 0.5
   geom_point(
     data = df[df$r > 0.5, ],
-    aes(x = x, y = y, color = 0.5 - r),
+    aes(x = x, y = y, color = r),
     size = 1
   ) +
 
@@ -115,12 +116,15 @@ p <- ggplot() +
 
   theme_bw()
 
-
+library(ggpubr)
+ggarrange(p1, p,nrow=1)
 
 p1 <- fit$curve.plot + ggtitle("Fitted curve along tumor boundary")
 p <- p + ggtitle("Second coordinate (distance from tumor edge)")
 
-kxs <- which(fit$xyt$r > 0.5)
+fit.full <- fit
+save(fit.full, file="../data/sample_A_fit_full.RData")
+
 
 
 library(anndata)
@@ -166,7 +170,7 @@ jxs <- match(xy_raw[ixs,]$V1, colnames(mat_r))
 
 mat_r <- mat_r[,jxs]
 
-gene <- mat_r[which(rownames(mat_r) == "RPL41"),]
+kxs <- which(fit$xyt$r > 0.5)
 
 fit$xyt <- fit$xyt[kxs,]
 mat_r <- mat_r[,kxs]
@@ -183,9 +187,9 @@ mat_r <- mat_r[which(rs >= 25),]
 rownames(mat_r) <- make.unique(rownames(mat_r))
 mat_r <- as.matrix(mat_r)
 
-mgam <- MorphoGAM::MorphoGAM(Y=mat_r,
-                  curve.fit = fit,
-                  design = y ~ s(t, bs="cc") + s(r))
+#mgam <- MorphoGAM::MorphoGAM(Y=mat_r,
+#                  curve.fit = fit,
+#                  design = y ~ s(t, bs="cc") + s(r))
 
 
 by.t <- ifelse(fit$xyt$r < 0.7, 1, 0)
@@ -198,8 +202,11 @@ mgam <- morphoGAM_test(Y=mat_r,
                   curve.fit = fit,
                   design = y ~ s(t, bs="cc", by=by.t) + s(r))
 
+save(mgam, file="../data/sample_A_mgam_results.RData")
 
-
+library(tidyverse)
+library(RColorBrewer)
+library(ggrepel)
 #subset
 qxs <- which(fit$xyt$r < 0.7)
 mgam.sub <- mgam
@@ -210,8 +217,7 @@ mgam.sub$fpca.r <- irlba::irlba(mgam.sub$fxs.r,nv=5)
 fit.sub <- fit
 fit.sub$xyt <- fit$xyt[qxs,]
 
-plotFPCloading_temp(mgam_object=mgam.sub, curve.fit=fit.sub, type="t", L=3, num_genes=10, sign="+")
-
+p.fpc <- plotFPCloading_temp(mgam_object=mgam.sub, curve.fit=fit.sub, type="t", L=3, num_genes=10, sign="-")
 
 library(gprofiler2)
 
@@ -297,19 +303,7 @@ keywords <- c(
   "tissue remodeling"
 )
 
-pattern <- paste(keywords, collapse = "|")
 
-relevant_zf <- zf_results[
-  grepl(pattern, zf_results$term_name, ignore.case = TRUE),
-]
-
-relevant_human <- human_results[
-  grepl(pattern, human_results$term_name, ignore.case = TRUE),
-]
-
-relevant_zf[, c("source", "term_name", "p_value", "intersection")]
-
-relevant_human[, c("source", "term_name", "p_value", "intersection")]
 
 # -----------------------------
 # 7. Plot top human ortholog results
@@ -406,6 +400,14 @@ p.geneset <- ggplot(
       color = "-log10(p-val)"
     )
 
+
+
+p.geneset
+
+library(ggpubr)
+
+p.all <- ggarrange(ggarrange(p1, p, nrow=1), ggarrange(p.fpc, p.geneset,nrow=1), nrow=2, ncol=1)
+
 mgam$results |> filter(peak_r_location > 0.7) |> arrange(desc(peak.r)) |> head(n=20)
 
 gene <- "hsp70l"
@@ -413,15 +415,25 @@ plot(fit$xyt$r, mat_r[gene,])
 plot(fit$xyt$r, mgam$fxs.r[gene,])
 plot(fit$xyt$t, mat_r[gene,])
 plot(fit$xyt$t, mgam$fxs.t[gene,])
-data.frame(x=fit$xyt$x, y=fit$xyt$y, color=mat_r[gene,]) |>
+p.hsp.raw <- data.frame(x=fit$xyt$x, y=fit$xyt$y, color=mat_r[gene,]) |>
   ggplot(aes(x=x,y=y,color=color)) + geom_point() +
-  scale_color_gradient(low="lightgrey", high="red") + theme_void()
+  scale_color_gradient(low="lightgrey", high="red") + theme_void() + 
+  ggtitle(paste0(gene, " expression")) + labs(color="Raw count")
 
-MorphoGAM:::plotGAMestimates()
-
-MorphoGAM:::plotGAMestimates(mat_r,
-genes=c("hsp70l", "puf60a"),
+p.hsp.r <- MorphoGAM:::plotGAMestimates(mat_r,
+genes=c("hsp70l"),
 curve_fit=fit,
 mgam=mgam,
 type="r"
 )
+
+p.all <- ggarrange(ggarrange(p1, p, nrow=1, labels=c("a","b")), 
+                    ggarrange(p.fpc, p.geneset, labels=c("c","d"), nrow=1),
+                    ggarrange(p.hsp.raw, p.hsp.r, nrow=1, labels=c("e","f")),
+                    nrow=3,ncol=1, heights=c(1.25, 1, 1)
+)
+
+ggsave(p.all,
+       filename="../plots/sample_A_figure.png",
+       width=12, height=12,
+       units="in")
