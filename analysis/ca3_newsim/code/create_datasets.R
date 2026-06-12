@@ -59,7 +59,7 @@ simulate_counts <- function(peak.t.value, sd.r.value) {
   v <- rep(0, ncol(T.basis))
   v[sample(2:(ncol(T.basis) - 1), 1)] <- 1
 
-  alpha1 <- -1
+  alpha1 <- rnorm(1, mean=-1)
   Mu[1,] <- alpha1 + T.basis %*% (peak.t.value * v)
   Y.new[1,] <- rnbinom(n, mu = exp(Mu[1,]), size = theta)
 

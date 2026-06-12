@@ -19,6 +19,7 @@
 *.gmt
 *.tif
 *.h5
+*.pyc
 
 analysis/data/*
 !analysis/data/.gitkeep

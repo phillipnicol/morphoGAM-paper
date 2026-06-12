@@ -135,11 +135,24 @@ def existing_keys(existing_results, rerun_failed):
         return set()
 
     rows = existing_results
-    if rerun_failed and "gaston_error" in rows:
-        error = rows["gaston_error"].fillna("").astype(str)
-        rows = rows[error == ""]
+    rank_ok = rows["gaston_rank"].notna() if "gaston_rank" in rows else False
+    error_ok = (
+        rows["gaston_error"].fillna("").astype(str).eq("")
+        if "gaston_error" in rows
+        else True
+    )
+    rows = rows[rank_ok & error_ok]
 
     return {key_tuple(row) for _, row in rows.iterrows()}
+
+
+def keep_current_grid(results, grid):
+    if results.empty:
+        return results
+
+    grid_keys = {key_tuple(row) for row in grid}
+    keep = [key_tuple(row) in grid_keys for _, row in results.iterrows()]
+    return results.loc[keep].copy()
 
 
 def without_key(results, key):
@@ -393,13 +406,18 @@ def main():
         print(f"Would process {len(grid)} datasets.")
         return
 
+    output_file.parent.mkdir(parents=True, exist_ok=True)
+    if args.overwrite and output_file.exists():
+        output_file.unlink()
+        print(f"Removed existing GASTON results file because --overwrite was set: {output_file}")
+
     if output_file.exists() and not args.overwrite:
         all_results = pd.read_csv(output_file)
+        all_results = keep_current_grid(all_results, grid)
     else:
         all_results = pd.DataFrame()
 
     done = existing_keys(all_results, args.rerun_failed)
-    output_file.parent.mkdir(parents=True, exist_ok=True)
     output_root.mkdir(parents=True, exist_ok=True)
 
     for i, row in enumerate(grid, start=1):

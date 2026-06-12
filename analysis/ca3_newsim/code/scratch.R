@@ -171,7 +171,7 @@ fit$xyt |> filter(t > 0.95) |> arrange(r)
 
 
 ### Testing datasets created in create_datasets.R
-Y_sim <- read.csv("../data/ca3_simulation_gradient/ca3_simulated_dataset_peakt_1_sd.r_2_rep_02.csv")
+Y_sim <- read.csv("../data/ca3_simulation_peak/ca3_simulated_dataset_peakt_1_sd.r_0p5_rep_01.csv")
 Y_sim <- as.matrix(Y_sim[,-1])
 rownames(Y_sim) <- 1:nrow(Y_sim)
 
@@ -190,4 +190,19 @@ mgam <- MorphoGAM::MorphoGAM(Y=Y_sim,
 
 mgam$results |> arrange(desc(peak.t)) |> head(n=10)
 
+
+mgam$results |> arrange(desc(peak.t)) |> head(n=20)
+
 linear.functional <- apply(mgam$fxs.t, 1, function(x) x[which.min(fit$xyt$t)] - x[which.max(fit$xyt$t)])
+
+
+#devtools::install_github('https://github.com/cz0316/HEARTSVG',force = T)
+
+hsvg_mat = cbind(xy, t(Y_sim)); colnames(hsvg_mat) = c("row", "col", paste0("gene", 1:nrow(Y_sim)))
+
+result=HEARTSVG::heartsvg(hsvg_mat,scale=T)
+
+head(result)
+
+which(result$gene == "gene1")
+

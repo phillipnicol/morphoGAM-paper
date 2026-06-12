@@ -5,6 +5,79 @@
 
 setwd(here::here("analysis/ca3_newsim/code"))
 
+project.root <- normalizePath(file.path("..", "..", ".."), mustWork = TRUE)
+r.version.short <- paste0(
+  "R-",
+  R.version$major,
+  ".",
+  strsplit(R.version$minor, ".", fixed = TRUE)[[1]][1]
+)
+renv.library <- file.path(project.root, "renv", "library", r.version.short, R.version$platform)
+if(dir.exists(renv.library)) {
+  .libPaths(c(renv.library, .libPaths()))
+}
+
+data.dir <- file.path("..", "data")
+
+cli.args <- commandArgs(trailingOnly = TRUE)
+
+get_cli_value <- function(flag, default = NULL) {
+  ix <- match(flag, cli.args)
+  if(is.na(ix) || ix == length(cli.args)) {
+    return(default)
+  }
+  cli.args[ix + 1]
+}
+
+has_cli_flag <- function(flag) {
+  flag %in% cli.args
+}
+
+parse_numeric_vector <- function(x) {
+  as.numeric(strsplit(x, ",", fixed = TRUE)[[1]])
+}
+
+parse_character_vector <- function(x) {
+  strsplit(x, ",", fixed = TRUE)[[1]]
+}
+
+if(has_cli_flag("--help")) {
+  cat(
+    "Usage: Rscript run_rmodels.R [options]\n",
+    "\n",
+    "Options:\n",
+    "  --replicates N        Number of replicates to run, starting at 1. Default: 10\n",
+    "  --peak-t X,Y          Comma-separated peak.t values. Default: 1\n",
+    "  --sd-r X,Y            Comma-separated sd.r values. Default: 0.5,1,2\n",
+    "  --patterns A,B        Comma-separated patterns. Default: peak,gradient,nonparam\n",
+    "  --output-file PATH    Results CSV path. Default: ../data/ca3_rmodel_results.csv\n",
+    "  --dry-run             Print the simulation grid and exit.\n",
+    sep = ""
+  )
+  quit(save = "no", status = 0)
+}
+
+M <- as.integer(get_cli_value("--replicates", "10"))
+peak.t <- parse_numeric_vector(get_cli_value("--peak-t", "1"))
+sd.r <- parse_numeric_vector(get_cli_value("--sd-r", "0.5,1,2"))
+patterns <- parse_character_vector(get_cli_value("--patterns", "peak,gradient,nonparam"))
+results.file <- get_cli_value("--output-file", file.path(data.dir, "ca3_rmodel_results.csv"))
+
+params <- expand.grid(
+  pattern = patterns,
+  peak.t.value = peak.t,
+  sd.r.value = sd.r,
+  replicate = seq_len(M),
+  KEEP.OUT.ATTRS = FALSE,
+  stringsAsFactors = FALSE
+)
+
+if(has_cli_flag("--dry-run")) {
+  print(params)
+  message("Would process ", nrow(params), " datasets.")
+  quit(save = "no", status = 0)
+}
+
 
 library(MorphoGAM)
 
@@ -31,14 +104,6 @@ out <- fit
 
 
 set.seed(1)
-
-M <- 10
-peak.t <- c(1)
-sd.r <- c(0.5, 1, 2)
-patterns <- c("peak", "gradient", "nonparam")
-
-data.dir <- file.path("..", "data")
-results.file <- file.path(data.dir, "ca3_rmodel_results.csv")
 
 format_label <- function(x) {
   gsub("\\.", "p", format(x, trim = TRUE, scientific = FALSE))
@@ -100,7 +165,7 @@ run_nnsvg <- function(Y_sim) {
 
   lib.size <- colSums(Y_sim)
   lib.size[lib.size == 0] <- 1
-  logCPM <- log(10^4 * sweep(Y_sim, MARGIN = 2, STATS = lib.size, FUN = "/") + 1)
+  logCPM <- log(sweep(Y_sim, MARGIN = 2, STATS = lib.size, FUN = "/") + 1)
 
   nn.svg <- nnSVG(
     input = logCPM,
@@ -108,17 +173,41 @@ run_nnsvg <- function(Y_sim) {
     verbose = TRUE
   )
 
-  score.col <- intersect(c("padj", "pdj", "p_adj", "p.value", "pval"), colnames(nn.svg))[1]
-  if(is.na(score.col)) {
-    score.col <- colnames(nn.svg)[ncol(nn.svg)]
+  if(nrow(nn.svg) < 1 || ncol(nn.svg) < 12) {
+    stop("nnSVG result does not have entry [1, 12].")
   }
 
-  ord <- order(nn.svg[[score.col]], decreasing = FALSE, na.last = TRUE)
-  gene.ids <- rownames(nn.svg)[ord]
+  gene1.rank <- nn.svg[1, 12]
+  score.col <- colnames(nn.svg)[12]
+
+  list(rank = gene1.rank, score = gene1.rank, score_col = score.col)
+}
+
+run_heartsvg <- function(Y_sim) {
+  hsvg.mat <- data.frame(
+    row = xy[, 1],
+    col = xy[, 2],
+    t(Y_sim),
+    check.names = FALSE
+  )
+  colnames(hsvg.mat) <- c("row", "col", paste0("gene", seq_len(nrow(Y_sim))))
+
+  heartsvg.results <- HEARTSVG::heartsvg(hsvg.mat, scale = TRUE)
+  gene.ids <- as.character(heartsvg.results$gene)
+  rank <- rank_gene(gene.ids, gene = "gene1")
+
+  score.cols <- setdiff(colnames(heartsvg.results), "gene")
+  numeric.cols <- score.cols[vapply(heartsvg.results[score.cols], is.numeric, logical(1))]
+  score.col <- if(length(numeric.cols) > 0) numeric.cols[1] else NA_character_
+  score <- if(!is.na(rank) && !is.na(score.col)) {
+    heartsvg.results[rank, score.col]
+  } else {
+    NA_real_
+  }
 
   list(
-    rank = rank_gene(gene.ids),
-    score = nn.svg["1", score.col],
+    rank = rank,
+    score = score,
     score_col = score.col
   )
 }
@@ -140,6 +229,10 @@ empty_result <- function(pattern, peak.t.value, sd.r.value, replicate, in.file) 
     nnsvg_score = NA_real_,
     nnsvg_score_col = NA_character_,
     nnsvg_error = NA_character_,
+    heartsvg_rank = NA_integer_,
+    heartsvg_score = NA_real_,
+    heartsvg_score_col = NA_character_,
+    heartsvg_error = NA_character_,
     stringsAsFactors = FALSE
   )
 }
@@ -193,17 +286,17 @@ run_one_dataset <- function(pattern, peak.t.value, sd.r.value, replicate) {
     result$nnsvg_score_col <- nnsvg.out$score_col
   }
 
+  heartsvg.out <- tryCatch(run_heartsvg(Y_sim), error = function(e) e)
+  if(inherits(heartsvg.out, "error")) {
+    result$heartsvg_error <- conditionMessage(heartsvg.out)
+  } else {
+    result$heartsvg_rank <- heartsvg.out$rank
+    result$heartsvg_score <- heartsvg.out$score
+    result$heartsvg_score_col <- heartsvg.out$score_col
+  }
+
   result
 }
-
-params <- expand.grid(
-  pattern = patterns,
-  peak.t.value = peak.t,
-  sd.r.value = sd.r,
-  replicate = seq_len(M),
-  KEEP.OUT.ATTRS = FALSE,
-  stringsAsFactors = FALSE
-)
 
 results <- vector("list", nrow(params))
 
