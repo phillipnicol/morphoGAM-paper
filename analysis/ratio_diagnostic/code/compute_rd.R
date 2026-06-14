@@ -63,3 +63,4 @@ xy <- cbind(x, y)
 
 fit.square <- CurveFinder(xy)
 cat("Ratio diagonistic is ", fit.square$t_v_r_span, "\n")
+
