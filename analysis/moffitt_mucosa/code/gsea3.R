@@ -118,7 +118,60 @@ df.mgam <- data.frame(y=gsea.morphogam$Name,
                       Method="MorphoGAM")
 
 
-df.full <- rbind(df.spark, df.mgam, df.nnsvg)
+## Add GASTON
+gaston_rank <- read.csv("../../python_models/data/gaston_gene_rankings.csv")
+#ranked.list <- gaston_rank$abs_slope
+ranked.list <- -log10(gaston_rank$p_value)
+names(ranked.list) <- gaston_rank$gene
+
+
+
+gsa_result <- runGSA(
+  geneLevelStats = ranked.list,
+  geneSetStat = "mean",       # or "mean", "median", "fisher", etc.
+  gsc = gene_sets,
+  nPerm = 1000                # Increase for stability
+)
+
+summary_table <- GSAsummaryTable(gsa_result)
+
+gsea.gaston <- summary_table[order(summary_table$`Stat (non-dir.)`,decreasing = TRUE), ]
+
+df.gaston <- data.frame(y=gsea.gaston$Name,
+                        x=gsea.gaston$`Stat (non-dir.)` |> scale(),
+                        Method="GASTON")
+
+
+## Add Spateo 
+spateo_rank <- read.csv("../../python_models/data/spateo_colon_svg_rankings.csv")
+#Replace 0 pvalues with 10^{-100}
+spateo_rank <- spateo_rank %>%
+  mutate(
+    pval = ifelse(pval == 0, 10^(-100), pval)
+  )
+ranked.list <- -log10(spateo_rank$pval)
+names(ranked.list) <- spateo_rank$gene
+
+
+
+gsa_result <- runGSA(
+  geneLevelStats = ranked.list,
+  geneSetStat = "mean",       # or "mean", "median", "fisher", etc.
+  gsc = gene_sets,
+  nPerm = 1000                # Increase for stability
+)
+
+summary_table <- GSAsummaryTable(gsa_result)
+
+gsea.spateo <- summary_table[order(summary_table$`Stat (non-dir.)`,decreasing = TRUE), ]
+
+df.spateo <- data.frame(y=gsea.spateo$Name,
+                        x=gsea.spateo$`Stat (non-dir.)` |> scale(),
+                        Method="Spateo")
+
+
+
+df.full <- rbind(df.spark, df.mgam, df.nnsvg, df.gaston, df.spateo)
 
 saveRDS(df.full, "../data/gsea3_results.RDS")
 

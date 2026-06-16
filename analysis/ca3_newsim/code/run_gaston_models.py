@@ -39,7 +39,7 @@ def parse_args():
     parser.add_argument("--glmpca-eps", type=float, default=1e-4)
     parser.add_argument("--epochs", type=int, default=10000)
     parser.add_argument("--checkpoint", type=int, default=500)
-    parser.add_argument("--num-restarts", type=int, default=2)
+    parser.add_argument("--num-restarts", type=int, default=1)
     parser.add_argument("--seed", type=int, default=1)
     parser.add_argument("--isodepth-hidden", nargs="+", type=int, default=[20, 20])
     parser.add_argument("--expression-hidden", nargs="+", type=int, default=[20, 20])
@@ -57,7 +57,7 @@ def parse_args():
     parser.add_argument(
         "--no-flip-isodepth",
         action="store_true",
-        help="Do not flip isodepth after get_isodepth_labels. Rank by abs(slope) is unchanged by the flip.",
+        help="Do not flip isodepth after get_isodepth_labels.",
     )
     parser.add_argument(
         "--force-retrain",
@@ -177,10 +177,12 @@ def empty_result(row, input_file, output_dir):
         "input_file": str(input_file),
         "gaston_output_dir": str(output_dir),
         "gaston_rank": np.nan,
+        "gaston_best_layer": np.nan,
         "gaston_slope": np.nan,
         "gaston_abs_slope": np.nan,
         "gaston_slope_tutorial_thresholded": np.nan,
         "gaston_p_value": np.nan,
+        "gaston_min_p_value": np.nan,
         "gaston_slope_per_isodepth_sd": np.nan,
         "gaston_log_fc_across_isodepth_range": np.nan,
         "gaston_isodepth_sd": np.nan,
@@ -325,34 +327,45 @@ def run_gaston_for_dataset(counts_file, coords_file, output_dir, args):
     )
 
     slope_mat, intercept_mat, discont_mat, pv_mat = pw_fit_dict["all_cell_types"]
-    if slope_mat.shape[1] != 1:
-        raise ValueError(
-            f"Expected one slope column for one layer, found {slope_mat.shape[1]}."
-        )
-
-    slope = slope_mat[:, 0]
-    p_values = pv_mat[:, 0]
-    slope_thresholded = np.where(p_values < args.tutorial_threshold, slope, 0.0)
     isodepth_sd = np.std(gaston_isodepth)
     isodepth_range = np.ptp(gaston_isodepth)
+
+    finite_pv_mat = np.where(np.isfinite(pv_mat), pv_mat, np.inf)
+    best_layer = np.argmin(finite_pv_mat, axis=1)
+    gene_index = np.arange(slope_mat.shape[0])
+
+    min_p_values = finite_pv_mat[gene_index, best_layer]
+    min_p_values = np.where(np.isinf(min_p_values), np.nan, min_p_values)
+    slope_at_min_p = slope_mat[gene_index, best_layer]
+    abs_slope_at_min_p = np.abs(slope_at_min_p)
+    slope_thresholded = np.where(
+        min_p_values < args.tutorial_threshold, slope_at_min_p, 0.0
+    )
 
     gene_slopes = pd.DataFrame(
         {
             "gene": gene_labels[idx_kept],
-            "slope": slope,
+            "best_layer": best_layer,
+            "slope": slope_at_min_p,
+            "abs_slope": abs_slope_at_min_p,
             "slope_tutorial_thresholded": slope_thresholded,
-            "slope_per_isodepth_sd": slope * isodepth_sd,
-            "log_fc_across_isodepth_range": slope * isodepth_range,
-            "p_value": p_values,
+            "slope_per_isodepth_sd": slope_at_min_p * isodepth_sd,
+            "log_fc_across_isodepth_range": slope_at_min_p * isodepth_range,
+            "p_value": min_p_values,
+            "min_p_value": min_p_values,
         }
     )
 
     gene_slopes_ranked = (
-        gene_slopes.assign(abs_slope=gene_slopes["slope"].abs())
-        .sort_values("abs_slope", ascending=False, kind="mergesort")
+        gene_slopes.sort_values(
+            ["min_p_value", "abs_slope"],
+            ascending=[True, False],
+            na_position="last",
+            kind="mergesort",
+        )
         .reset_index(drop=True)
     )
-    gene_slopes_ranked["abs_slope_rank"] = np.arange(
+    gene_slopes_ranked["p_value_rank"] = np.arange(
         1, len(gene_slopes_ranked) + 1
     )
 
@@ -362,13 +375,15 @@ def run_gaston_for_dataset(counts_file, coords_file, output_dir, args):
 
     gene_1 = gene_1_rows.iloc[0]
     return {
-        "gaston_rank": int(gene_1["abs_slope_rank"]),
+        "gaston_rank": int(gene_1["p_value_rank"]),
+        "gaston_best_layer": int(gene_1["best_layer"]),
         "gaston_slope": float(gene_1["slope"]),
         "gaston_abs_slope": float(gene_1["abs_slope"]),
         "gaston_slope_tutorial_thresholded": float(
             gene_1["slope_tutorial_thresholded"]
         ),
         "gaston_p_value": float(gene_1["p_value"]),
+        "gaston_min_p_value": float(gene_1["min_p_value"]),
         "gaston_slope_per_isodepth_sd": float(gene_1["slope_per_isodepth_sd"]),
         "gaston_log_fc_across_isodepth_range": float(
             gene_1["log_fc_across_isodepth_range"]

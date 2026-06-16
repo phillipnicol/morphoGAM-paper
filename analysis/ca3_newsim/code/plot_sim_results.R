@@ -49,6 +49,21 @@ if(file.exists(spateo.results.file)) {
   message("No Spateo results file found at ", spateo.results.file)
 }
 
+gaston.results.file <- file.path(data.dir, "ca3_gaston_model_results.csv")
+if(file.exists(gaston.results.file)) {
+  message("Adding GASTON results from ", gaston.results.file)
+  gaston.results <- read_csv(gaston.results.file, show_col_types = FALSE) %>%
+    select(pattern, peak.t.value, sd.r.value, replicate, gaston_rank)
+
+  results <- results %>%
+    left_join(
+      gaston.results,
+      by = c("pattern", "peak.t.value", "sd.r.value", "replicate")
+    )
+} else {
+  message("No GASTON results file found at ", gaston.results.file)
+}
+
 xy <- read_csv(file.path(data.dir, "ca3_xy.csv"), show_col_types = FALSE)
 t.coord <- read_csv(file.path(data.dir, "ca3_t_coords.csv"), show_col_types = FALSE)[[1]]
 r.coord <- read_csv(file.path(data.dir, "ca3_r_coords.csv"), show_col_types = FALSE)[[1]]
@@ -58,7 +73,8 @@ rank.cols <- c(
   "spark_rank",
   "nnsvg_rank",
   "heartsvg_rank",
-  "spateo_rank"
+  "spateo_rank",
+  "gaston_rank"
 )
 
 missing.rank.cols <- setdiff(rank.cols, colnames(results))
@@ -71,7 +87,8 @@ method.labels <- c(
   spark_rank = "SPARK-X",
   nnsvg_rank = "nnSVG",
   heartsvg_rank = "HEARTSVG",
-  spateo_rank = "Spateo"
+  spateo_rank = "Spateo",
+  gaston_rank = "GASTON"
 )
 
 method.palette <- c(
@@ -79,7 +96,8 @@ method.palette <- c(
   "SPARK-X" = "#009E73",
   "nnSVG" = "#D55E00",
   "HEARTSVG" = "#CC79A7",
-  "Spateo" = "#E69F00"
+  "Spateo" = "#E69F00",
+  "GASTON" = "#56B4E9"
 )
 
 plot.theme <- theme_bw(base_size = 12) +
@@ -183,7 +201,7 @@ make_rank_panel <- function(results, pattern) {
     facet_wrap(~ sd.r.value, nrow = 1) +
     scale_fill_manual(values = method.palette) +
     scale_color_manual(values = method.palette) +
-    scale_y_log10(
+    scale_y_sqrt(
       breaks = pretty_breaks(n = 5),
       expand = expansion(mult = c(0.05, 0.12))
     ) +
