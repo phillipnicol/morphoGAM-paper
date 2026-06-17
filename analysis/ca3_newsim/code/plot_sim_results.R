@@ -102,12 +102,12 @@ method.palette <- c(
 
 plot.theme <- theme_bw(base_size = 12) +
   theme(
-    axis.title = element_text(face = "bold"),
+    axis.title = element_text(),
     axis.text = element_text(color = "black"),
     strip.background = element_rect(fill = "grey92", color = "grey70"),
-    strip.text = element_text(face = "bold"),
+    strip.text = element_text(),
     legend.position = "none",
-    plot.title = element_text(face = "bold", hjust = 0),
+    plot.title = element_text(hjust = 0),
     plot.subtitle = element_text(color = "grey30"),
     plot.margin = margin(6, 6, 6, 6)
   )
@@ -136,7 +136,7 @@ gene1_signal <- function(pattern, t) {
 
 pattern_title <- function(pattern) {
   dplyr::case_when(
-    pattern == "peak" ~ "Peak",
+    pattern == "peak" ~ "Localized",
     pattern == "gradient" ~ "Gradient",
     pattern == "nonparam" ~ "Non-parametric",
     TRUE ~ pattern
@@ -157,15 +157,15 @@ make_spatial_panel <- function(df, value_col, title, legend_title) {
     geom_point(size = 0.65, alpha = 0.95) +
     coord_equal() +
     scale_color_viridis_c(option = "magma", name = legend_title) +
-    labs(title = title, x = "x coordinate", y = "y coordinate") +
+    labs(title = title, x = "x", y = "y") +
     guides(color = guide_colorbar(barheight = unit(32, "pt"))) +
     theme_bw(base_size = 12) +
     theme(
-      axis.title = element_text(face = "bold"),
+      axis.title = element_text(),
       axis.text = element_text(color = "black"),
       legend.position = "right",
-      legend.title = element_text(face = "bold"),
-      plot.title = element_text(face = "bold", hjust = 0),
+      legend.title = element_text(),
+      plot.title = element_text(hjust = 0),
       plot.margin = margin(6, 6, 6, 6)
     )
 }
@@ -184,8 +184,8 @@ make_rank_panel <- function(results, pattern) {
       method = factor(.data$method, levels = unname(method.labels)),
       sd.r.value = factor(
         .data$sd.r.value,
-        levels = sort(unique(results$sd.r.value)),
-        labels = paste0("sd.r = ", sort(unique(results$sd.r.value)))
+        levels = c(0.5, 1, 2),
+        labels = c("low r", "medium r", "high r")
       )
     ) %>%
     filter(!is.na(.data$rank), .data$rank > 0)
@@ -206,8 +206,8 @@ make_rank_panel <- function(results, pattern) {
       expand = expansion(mult = c(0.05, 0.12))
     ) +
     labs(
-      title = "Gene 1 rank across methods",
-      subtitle = "Lower rank indicates stronger recovery of the simulated signal",
+      title = NULL,
+      subtitle = NULL,
       x = NULL,
       y = "Rank of gene 1"
     ) +
@@ -224,7 +224,7 @@ make_pattern_plot <- function(pattern) {
   p.gene1 <- make_spatial_panel(
     schem,
     value_col = "gene1",
-    title = paste0("Gene 1 ", tolower(pattern_title(pattern)), " signal"),
+    title = paste0(pattern_title(pattern), " signal"),
     legend_title = "Signal"
   )
 
@@ -238,14 +238,7 @@ make_pattern_plot <- function(pattern) {
   p.rank <- make_rank_panel(results, pattern)
 
   ((p.gene1 | p.confounder) / p.rank) +
-    plot_layout(heights = c(1, 1.15)) +
-    plot_annotation(
-      title = paste0(pattern_title(pattern), " simulation"),
-      theme = theme(
-        plot.title = element_text(face = "bold", size = 16, hjust = 0),
-        plot.margin = margin(6, 6, 6, 6)
-      )
-    )
+    plot_layout(heights = c(1, 1.15))
 }
 
 patterns <- c("peak", "gradient", "nonparam")

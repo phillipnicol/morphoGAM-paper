@@ -606,7 +606,7 @@
       "RemoteUsername": "phillipnicol",
       "RemoteRepo": "MorphoGAM",
       "RemoteRef": "rev_plan",
-      "RemoteSha": "b4c7cd9d9ed5e016dbcc80d7878f916f285f7d5f",
+      "RemoteSha": "1f3cc6fac24e7598e299e840afcccf20aab12dac",
       "Requirements": [
         "RANN",
         "RSpectra",
@@ -621,7 +621,7 @@
         "princurve",
         "shiny"
       ],
-      "Hash": "3397298f6718f7c425d3edcd59cef3f2"
+      "Hash": "fd9bd536a2d7f3622abcbcc444250c86"
     },
     "R.methodsS3": {
       "Package": "R.methodsS3",
@@ -1852,6 +1852,37 @@
       "Repository": "RSPM",
       "Hash": "aa5e1cd11c2d15497494c5292d7ffcc8"
     },
+    "fastmatch": {
+      "Package": "fastmatch",
+      "Version": "1.1-8",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "R"
+      ],
+      "Hash": "d93dbf3c37930e4247481526bfc89b1a"
+    },
+    "fgsea": {
+      "Package": "fgsea",
+      "Version": "1.26.0",
+      "Source": "Bioconductor",
+      "Requirements": [
+        "BH",
+        "BiocParallel",
+        "Matrix",
+        "R",
+        "Rcpp",
+        "cowplot",
+        "data.table",
+        "fastmatch",
+        "ggplot2",
+        "grid",
+        "scales",
+        "stats",
+        "utils"
+      ],
+      "Hash": "62342298a29521147ea0764b22e8121e"
+    },
     "filelock": {
       "Package": "filelock",
       "Version": "1.0.3",
@@ -2962,6 +2993,17 @@
       ],
       "Hash": "b4349847250b103bbbb8bc6819c4fbca"
     },
+    "marray": {
+      "Package": "marray",
+      "Version": "1.78.0",
+      "Source": "Bioconductor",
+      "Requirements": [
+        "R",
+        "limma",
+        "methods"
+      ],
+      "Hash": "ac254a1998c8d605850cee85d597756d"
+    },
     "mathjaxr": {
       "Package": "mathjaxr",
       "Version": "2.0-0",
@@ -3313,6 +3355,34 @@
         "stats"
       ],
       "Hash": "30e5b56762942d319561e5ebaab69c74"
+    },
+    "piano": {
+      "Package": "piano",
+      "Version": "2.16.0",
+      "Source": "Bioconductor",
+      "Requirements": [
+        "Biobase",
+        "BiocGenerics",
+        "DT",
+        "R",
+        "fgsea",
+        "gplots",
+        "grDevices",
+        "graphics",
+        "htmlwidgets",
+        "igraph",
+        "marray",
+        "methods",
+        "relations",
+        "scales",
+        "shiny",
+        "shinydashboard",
+        "shinyjs",
+        "stats",
+        "utils",
+        "visNetwork"
+      ],
+      "Hash": "e5bdebbfb9fd46b27d3a95388b808199"
     },
     "pillar": {
       "Package": "pillar",
@@ -3680,6 +3750,22 @@
       ],
       "Hash": "f7f3d0b52f1eb2745d13ae785ec275d4"
     },
+    "relations": {
+      "Package": "relations",
+      "Version": "0.6-17",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "R",
+        "cluster",
+        "grDevices",
+        "graphics",
+        "sets",
+        "slam",
+        "stats"
+      ],
+      "Hash": "c473de2cc98657e5a52d9c89650bd03c"
+    },
     "rematch": {
       "Package": "rematch",
       "Version": "2.0.0",
@@ -4043,6 +4129,20 @@
       ],
       "Hash": "fb6f4aacfcc16539458c66b698339e69"
     },
+    "sets": {
+      "Package": "sets",
+      "Version": "1.0-25",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "R",
+        "grDevices",
+        "graphics",
+        "stats",
+        "utils"
+      ],
+      "Hash": "cf00a3c090a54979990af2e89506a1d3"
+    },
     "shiny": {
       "Package": "shiny",
       "Version": "1.13.0",
@@ -4077,6 +4177,33 @@
       ],
       "Hash": "3ae8521a5a4576fc4b78d00d401f22f9"
     },
+    "shinydashboard": {
+      "Package": "shinydashboard",
+      "Version": "0.7.3",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "R",
+        "htmltools",
+        "promises",
+        "shiny",
+        "utils"
+      ],
+      "Hash": "b39bc6c8dd72423ccf9e30ec7eb6a0f2"
+    },
+    "shinyjs": {
+      "Package": "shinyjs",
+      "Version": "2.1.1",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "R",
+        "digest",
+        "jsonlite",
+        "shiny"
+      ],
+      "Hash": "96b8d41d0dfeef0117b4b7bc43fefabe"
+    },
     "sitmo": {
       "Package": "sitmo",
       "Version": "2.0.2",
@@ -4087,6 +4214,17 @@
         "Rcpp"
       ],
       "Hash": "c956d93f6768a9789edbc13072b70c78"
+    },
+    "slam": {
+      "Package": "slam",
+      "Version": "0.1-55",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "R",
+        "stats"
+      ],
+      "Hash": "a2a11fdcb7cf5afbf31aeb0e3828fbf6"
     },
     "snow": {
       "Package": "snow",
@@ -4711,6 +4849,24 @@
         "R"
       ],
       "Hash": "9380d36888b72faf5ae6c22b44703867"
+    },
+    "visNetwork": {
+      "Package": "visNetwork",
+      "Version": "2.1.4",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "R",
+        "grDevices",
+        "htmltools",
+        "htmlwidgets",
+        "jsonlite",
+        "magrittr",
+        "methods",
+        "stats",
+        "utils"
+      ],
+      "Hash": "5925096277c19e4ea9209e175a61d3d3"
     },
     "vroom": {
       "Package": "vroom",

@@ -84,7 +84,7 @@ library(ggplot2)
 library(patchwork)
 
 # Load the hand-drawn curve used in the manuscript
-load("../data/mucosa_mgam.RData")
+load("../data/mucosa_mgam_hd.RData")
 
 make_df <- function(ref, comp, stat, method) {
   data.frame(
@@ -99,16 +99,16 @@ df <- rbind(
   make_df(mgam$results$peak.t, mgam10$results$peak.t, "t", "k = 10"),
   make_df(mgam$results$peak.t, mgam20$results$peak.t, "t", "k = 20"),
   make_df(mgam$results$peak.t, mgam50$results$peak.t, "t", "k = 50"),
-  make_df(mgam$results$peak.t, mgam_hd$results$peak.t, "t", "Hand drawn"),
+  make_df(mgam$results$peak.t, mgam_hd$results$peak.t, "t", "Manual"),
 
   make_df(mgam$results$peak.r, mgam10$results$peak.r, "r", "k = 10"),
   make_df(mgam$results$peak.r, mgam20$results$peak.r, "r", "k = 20"),
   make_df(mgam$results$peak.r, mgam50$results$peak.r, "r", "k = 50"),
-  make_df(mgam$results$peak.r, mgam_hd$results$peak.r, "r", "Hand drawn")
+  make_df(mgam$results$peak.r, mgam_hd$results$peak.r, "r", "Manual")
 )
 
 df$stat <- factor(df$stat, levels = c("t", "r"))
-df$method <- factor(df$method, levels = c("k = 10", "k = 20", "k = 50", "Hand drawn"))
+df$method <- factor(df$method, levels = c("k = 10", "k = 20", "k = 50", "Manual"))
 
 cors <- do.call(
   rbind,

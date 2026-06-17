@@ -1,6 +1,6 @@
 package: MorphoGAM
 remote: phillipnicol/MorphoGAM
 branch: rev_plan
-commit: 67a1bd1d420e6ca671166b8688f441ab1c56f3b0
+commit: 1f3cc6fac24e7598e299e840afcccf20aab12dac
 version: 1.1.1
-updated_at: 2026-06-12 13:24:29
+updated_at: 2026-06-17 16:40:38

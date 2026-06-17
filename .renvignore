@@ -1,0 +1,18 @@
+# Keep renv dependency discovery focused on source files.
+
+# renv should not scan its installed package library.
+renv/library/
+
+# Each analysis folder may contain data, plots, logs, and generated outputs.
+# Only scan code subdirectories for dependency discovery.
+analysis/data/
+analysis/*/data/
+analysis/*/plots/
+analysis/*/logs/
+analysis/python_models
+analysis/python_models/
+analysis/python_models/**
+
+# Generated Python artifacts inside code directories.
+analysis/*/code/__pycache__/
+analysis/*/code/**/*.pyc

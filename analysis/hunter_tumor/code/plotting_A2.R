@@ -10,7 +10,7 @@ library(ggplot2)
 library(grid)
 
 panel_text_theme <- theme(
-  plot.title = element_text(size = 21, face = "bold", hjust = 0.5),
+  plot.title = element_text(size = 21, face = "plain", hjust = 0.5),
   axis.title = element_text(size = 18),
   axis.text = element_text(size = 16),
   legend.title = element_text(size = 16),
@@ -94,7 +94,7 @@ p <- ggplot() +
 
   labs(
     color = "r",
-    caption = "Grey points: non-tumor cell"
+    caption = "Grey points: non-tumor spots"
   ) +
 
   theme_bw()
@@ -226,7 +226,7 @@ for (i in seq_along(p.fpc$layers)) {
   }
 }
 p.fpc <- p.fpc +
-  ggtitle("FPC loading genes") +
+  ggtitle(NULL) +
   coord_cartesian(clip = "off") +
   scale_x_continuous(expand = expansion(mult = c(0.03, 0.3))) +
   panel_text_theme +
@@ -478,6 +478,9 @@ p.hsp.r <- p.hsp.r +
     axis.title.y = element_text(size = 16, margin = margin(r = 6)),
     plot.margin = margin(12, 12, 12, 12)
   )
+
+#Peak statistic
+mgam$results["hsp70l",]
 
 p.all <- ggarrange(ggarrange(p1, p, nrow=1, labels=c("a","b"),
                               widths = c(1.08, 1),
