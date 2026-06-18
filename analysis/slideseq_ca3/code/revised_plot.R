@@ -27,6 +27,7 @@ Y <- Y[, -outlier]
 fit <- CurveFinder(xy)
 
 load("../data/mgam_ca3_t_and_r.RData")
+mgam <- mgam2
 
 Y <- as.matrix(Y)
 
@@ -53,6 +54,13 @@ p.range <- plotGAMestimates(
   curve_fit = fit
 ) +
   scale_y_sqrt()
+
+
+### Pvalues and peak statistic
+mgam$results["Rgs14",]
+mgam$results["Cpne9",]
+mgam$results["Fxyd6",]
+mgam$results["Hpca",]
 
 p.curve <- fit$curve.plot + ggtitle("CA3 cells")
 
@@ -176,8 +184,8 @@ p.signal <- make_spatial_panel(
 p.confounder <- make_spatial_panel(
   sim.schematic,
   value_col = "confounder",
-  title = "Confounding genes 2-p: linear radial signal",
-  legend_title = "Radial signal"
+  title = "Confounding genes 2 - G: linear radial signal",
+  legend_title = "Signal"
 )
 
 sim.rank.df <- sim.results |>
@@ -194,7 +202,7 @@ sim.rank.df <- sim.results |>
     sd.r.value = factor(
       .data$sd.r.value,
       levels = c(0.5, 1, 2),
-      labels = c("low r", "medium r", "high r")
+      labels = c("Low r", "Medium r", "High r")
     )
   ) |>
   filter(!is.na(.data$rank), .data$rank > 0)
@@ -231,7 +239,8 @@ p.localized.sim <- ggarrange(
   ggarrange(p.signal, p.confounder, nrow = 1, ncol = 2),
   p.rank,
   nrow = 2,
-  heights = c(1, 1.15)
+  heights = c(1, 1.15),
+  labels = c("d", "e")
 )
 
 p.full.revised <- ggarrange(
@@ -242,15 +251,15 @@ p.full.revised <- ggarrange(
     ncol = 2,
     labels = c("a", "b", "")
   ),
-  p.localized.sim,
   ggarrange(
     p.peak,
     p.range,
     nrow = 2
   ),
+  p.localized.sim,
   nrow = 3,
-  heights = c(1.5, 2.7, 2),
-  labels = c("", "c", "d")
+  heights = c(1.5, 2, 2.7),
+  labels = c("", "c", "")
 )
 
 ggsave(

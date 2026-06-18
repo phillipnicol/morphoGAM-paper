@@ -185,7 +185,7 @@ make_rank_panel <- function(results, pattern) {
       sd.r.value = factor(
         .data$sd.r.value,
         levels = c(0.5, 1, 2),
-        labels = c("low r", "medium r", "high r")
+        labels = c("Low r", "Medium r", "High r")
       )
     ) %>%
     filter(!is.na(.data$rank), .data$rank > 0)
@@ -231,8 +231,8 @@ make_pattern_plot <- function(pattern) {
   p.confounder <- make_spatial_panel(
     schem,
     value_col = "confounder",
-    title = "Confounding genes 2-p: linear radial signal",
-    legend_title = "Radial signal"
+    title = "Confounding genes 2 - G: linear radial signal",
+    legend_title = "Signal"
   )
 
   p.rank <- make_rank_panel(results, pattern)

@@ -28,13 +28,13 @@ add_panel_label <- function(img, label) {
   )
 }
 
-p.gradient <- image_read(gradient.file) |>
+p.nonparam <- image_read(nonparam.file) |>
   add_panel_label("a")
 
-p.nonparam <- image_read(nonparam.file) |>
+p.gradient <- image_read(gradient.file) |>
   add_panel_label("b")
 
-supp.plot <- image_append(c(p.gradient, p.nonparam), stack = TRUE)
+supp.plot <- image_append(c(p.nonparam, p.gradient), stack = TRUE)
 
 out.file <- "../plots/ca3_sim_results_gradient_nonparam_supp.png"
 image_write(supp.plot, path = out.file, format = "png")
