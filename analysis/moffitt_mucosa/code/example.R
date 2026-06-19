@@ -297,7 +297,7 @@ library(ggpubr)
 
 locus <- as.matrix(meta.sub[,c("x","y")])
 
-fit <- CurveFinder(locus,knn=10,loop=TRUE)
+fit <- CurveFinder(locus,knn=14,loop=TRUE)
 
 gene.1 <- Y.sub["Ddx58",]
 gene.2 <- Y.sub["Apob",]

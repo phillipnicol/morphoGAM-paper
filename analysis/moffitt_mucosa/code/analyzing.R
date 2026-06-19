@@ -100,7 +100,10 @@ ggsave(sparkplot, filename="../plots/spark_top9.png",
 ## MorphoGAM
 library(mgcv)
 library(MorphoGAM)
-fit <- CurveFinder(locus,knn=10,loop=TRUE)
+#fit <- CurveFinder(locus,knn="auto",loop=TRUE)
+#See knn = 14
+
+fit <- CurveFinder(locus,knn=14,loop=TRUE)
 
 #ixs <- which(fit$xyt$r > 0.3 & fit$xyt$r < 0.7)
 #Y.sub <- Y.sub[,ixs]

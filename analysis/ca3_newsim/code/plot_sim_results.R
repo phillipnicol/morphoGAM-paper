@@ -224,7 +224,7 @@ make_pattern_plot <- function(pattern) {
   p.gene1 <- make_spatial_panel(
     schem,
     value_col = "gene1",
-    title = paste0(pattern_title(pattern), " signal"),
+    title = paste0("Gene 1: ", pattern_title(pattern), " signal"),
     legend_title = "Signal"
   )
 

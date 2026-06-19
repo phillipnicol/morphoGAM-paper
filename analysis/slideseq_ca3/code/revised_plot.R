@@ -177,7 +177,7 @@ make_spatial_panel <- function(df, value_col, title, legend_title) {
 p.signal <- make_spatial_panel(
   sim.schematic,
   value_col = "signal",
-  title = "Localized signal",
+  title = "Gene 1: Localized signal",
   legend_title = "Signal"
 )
 

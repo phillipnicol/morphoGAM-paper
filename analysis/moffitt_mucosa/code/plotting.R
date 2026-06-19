@@ -129,6 +129,11 @@ fpc2 <- plotFPCloading(mgam_object=mgam,
 
 df.full <- readRDS("../data/gsea3_results.RDS")
 
+df.full$Method <- factor(
+  df.full$Method,
+  levels = c("MorphoGAM", "Spark-X", "nnSVG", "GASTON", "Spateo")
+)
+
 
 library(dplyr)
 library(ggplot2)
@@ -181,5 +186,4 @@ ggsave(p2, filename="../plots/mucosa_updated_gsea_and_pcs.png",
        width= 4.78*1.5,
        height= 8.18*1.5,
        units="in")
-
 

@@ -83,8 +83,7 @@ p.power <- ggplot(data=df,aes(x=sigma, y=power, color=method)) +
   xlab(expression(sigma)) + ylab("Power")+
   theme_bw() + theme(legend.position = "top")
 
-ggsave(p.power, filename="../plots/ca3_power.png",
-       width=9.11*1.1, height=11.7*1.1, units="in")
+ggsave(p.power, filename="../plots/ca3_power.png")
 
 
 p.curve <- fit$curve.plot + ggtitle("CA3 cells")
