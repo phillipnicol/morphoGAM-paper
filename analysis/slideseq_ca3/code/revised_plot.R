@@ -277,3 +277,11 @@ ggsave(
   height = 13.8,
   units = "in"
 )
+
+ggsave(
+  p.localized.sim,
+  filename = "../plots/ca3_revised_d_e.png",
+  width = 9.11 * 1.1,
+  height = 6,
+  units = "in"
+)

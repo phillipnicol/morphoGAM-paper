@@ -1,0 +1,9 @@
+Rscript create_datasets.R
+
+Rscript run_rmodels.R
+
+/Users/phillipnicol/miniforge3/bin/conda run -n spateo-release-morphogam python run_spateo_models.py
+
+/Users/phillipnicol/miniforge3/bin/conda run -n gaston-morphogam python run_gaston_models.py
+
+Rscript plot_sim_results.R

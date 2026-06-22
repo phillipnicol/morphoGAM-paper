@@ -35,6 +35,12 @@ rownames(mgam$fpca.t$u) <- gene_names
 MorphoGAM::plotGAMestimates(Y,genes=c("Mstn", "Clu", "Ltb", "Cd22"),
                             type="r", curve_fit=fit, mgam_object=mgam, nrow=2)
 
+MorphoGAM::plotFPCloading(mgam, type="t", curve.fit=fit, L=1, num_genes = 10)
+
+plot.gene <- mgam$results |> arrange(desc(peak.t)) |> head(n=6) |> rownames()
+MorphoGAM::plotGAMestimates(Y,genes=plot.gene,
+                            type="t", curve_fit=fit, mgam_object=mgam, nrow=2)
+
 mgam1 <- mgam
 fit1 <- fit
 

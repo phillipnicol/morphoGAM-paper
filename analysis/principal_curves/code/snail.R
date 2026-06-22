@@ -10,13 +10,17 @@ xy <- data.frame(x=r*cos(10*t)+rnorm(n=n,sd=0.01),
                  y=r*sin(10*t) + rnorm(n=n,sd=0.01))
 xy <- as.matrix(xy)
 
+#Find knn automatically
+fit <- CurveFinder(xy,knn="auto")
+knn <- fit$knn
+default.knn <- knn
 
-fit <- CurveFinder(xy,knn=8)
+#fit <- CurveFinder(xy,knn=8)
 
 p <- xy |> ggplot(aes(x=x,y=y)) + geom_point(size=0.5) +
   theme_bw() +
   ggtitle("Swiss roll")
-p1 <- fit$curve.plot + guides(color="none") + ggtitle("Path (knn=8)")
+p1 <- fit$curve.plot + guides(color="none") + ggtitle("Curve (knn=20, default)")
 p2 <- fit$coordinate.plot +guides(color="none")
 
 library(princurve)
@@ -89,6 +93,9 @@ for(i in 1:nrow(res2)) {
 p.3.1 <- data.frame(x=res[,1], y=res[,2]) |>
   ggplot(aes(x=x,y=y)) +
   geom_point() + geom_line() +
+  geom_vline(xintercept=default.knn, linetype="dashed", color="grey50") +
+  annotate("text", x=default.knn + 0.8, y=0.1, label="default",
+           angle=90, color="grey40", size=3) +
   theme_bw() + xlab("knn") + ylab("r^2 (spearman) with ground truth") +
   ylim(0,1)
 

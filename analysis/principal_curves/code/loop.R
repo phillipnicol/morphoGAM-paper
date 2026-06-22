@@ -18,17 +18,17 @@ load("../data/loop_ground_truth.Rda")
 p <- xy |> ggplot(aes(x=x,y=y)) + geom_point(size=0.5) +
   theme_bw() +
   ggtitle("Mouse colon")
-p1 <- fit$curve.plot + guides(color="none") + ggtitle("Path (Hand drawn)")
+p1 <- fit$curve.plot + guides(color="none") + ggtitle("Curve (Hand drawn)")
 p2 <- fit$coordinate.plot +guides(color="none")
 
 
 out10 <- CurveFinder(xy,knn=10, loop=TRUE)
 p.cf.10 <- out10$curve.plot + guides(color="none") + ggtitle("MorphoGAM (knn=10)")
 
-out15 <- CurveFinder(xy,knn=10, loop=TRUE)
-p.cf.15 <- out15$curve.plot + guides(color="none")+ ggtitle("MorphoGAM (knn=15)")
+out15 <- CurveFinder(xy,knn=14, loop=TRUE)
+p.cf.15 <- out15$curve.plot + guides(color="none")+ ggtitle("MorphoGAM (knn=14, default)")
 
-out20 <- CurveFinder(xy,knn=10, loop=TRUE)
+out20 <- CurveFinder(xy,knn=20, loop=TRUE)
 p.cf.20 <- out20$curve.plot + guides(color="none")+ ggtitle("MorphoGAM (knn=20)")
 
 

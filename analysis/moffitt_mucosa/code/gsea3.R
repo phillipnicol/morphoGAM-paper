@@ -122,6 +122,7 @@ df.mgam <- data.frame(y=gsea.morphogam$Name,
 gaston_rank <- read.csv("../../python_models/data/gaston_gene_rankings.csv")
 #ranked.list <- gaston_rank$abs_slope
 ranked.list <- -log10(gaston_rank$p_value)
+ranked.list[is.na(ranked.list)] <- 0
 names(ranked.list) <- gaston_rank$gene
 
 
