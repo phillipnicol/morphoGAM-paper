@@ -13,15 +13,19 @@ xy <- xy[-outlier,]
 
 load("../data/granule_ground_truth.Rda")
 
-fit1 <- CurveFinder(xy,knn=5)
+#find optimal
+#fit.opt <- CurveFinder(xy,knn="auto")
+#See knn=9
 
-fit2 <- CurveFinder(xy,knn=10)
+fit1 <- CurveFinder(xy,knn=9)
+
+fit2 <- CurveFinder(xy,knn=5)
 
 fit3 <- CurveFinder(xy,knn=30)
 
-p1 <- fit1$curve.plot + guides(color="none") + ggtitle("MorphoGAM (knn=5)")
+p1 <- fit1$curve.plot + guides(color="none") + ggtitle("MorphoGAM (knn=9, default)")
 
-p2 <- fit2$curve.plot + guides(color="none") + ggtitle("MorphoGAM (knn=10)")
+p2 <- fit2$curve.plot + guides(color="none") + ggtitle("MorphoGAM (knn=5)")
 
 p3 <- fit3$curve.plot + guides(color="none") + ggtitle("MorphoGAM (knn=30)")
 
@@ -110,15 +114,19 @@ princurve_granule <- data.frame(x=xy[,1], y=xy[,2]) |>
   ggtitle("Principal Curve (Default)") +
   guides(color="none")
 
-fit_granule <- CurveFinder(as.matrix(xy),knn=6,
-                           prune.outlier=2)
+#fit_granule <- CurveFinder(as.matrix(xy),knn=6,
+#                           prune.outlier=2)
 
 
+default.knn <- 9
 p.3.1 <- data.frame(x=res[,1], y=res[,2]) |>
   ggplot(aes(x=x,y=y)) +
   geom_point() + geom_line() +
-  theme_bw() + xlab("k") + ylab(expression(r^2 ~ "with truth"))+
-  ylim(0.5,1)
+  theme_bw() + xlab("k") + ylab(expression(r^2 ~ "with reference"))+
+  ylim(0.5,1) + 
+  geom_vline(xintercept=default.knn, linetype="dashed", color="grey50") +
+  annotate("text", x=default.knn + 0.8, y=0.65, label="default",
+           angle=90, color="grey40", size=3) 
 
 p.3.2 <- data.frame(x=res2[,1], y=res2[,2]) |>
   ggplot(aes(x=x,y=y)) +

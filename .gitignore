@@ -5,6 +5,7 @@
 .Ruserdata
 .DS_Store
 *.log
+*.txt
 *.rda
 *.Rda
 *.RDS

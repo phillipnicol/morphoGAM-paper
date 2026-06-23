@@ -39,24 +39,30 @@ res <- SPARK::sparkx(count_in = Y.sub,
 spark <- res$res_mtest |> as.data.frame() |>
   arrange(adjustedPval)
 
+#Load gaston
+gaston_rank <- read.csv("../../python_models/data/gaston_gene_rankings.csv")
+#ranked.list <- gaston_rank$abs_slope
+gaston.list <- -log10(gaston_rank$p_value)
+gaston.list[is.na(gaston.list)] <- 0
+names(gaston.list) <- gaston_rank$gene
 
+library(dplyr)
 
+spateo_res <- read.csv("../../python_models/data/spateo_colon_svg_rankings.csv")
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+spateo_rank <- data.frame(gene = rownames(Y.sub)) %>%
+  left_join(spateo_res, by = "gene") %>%
+  mutate(
+    pval = case_when(
+      is.na(pval) ~ 1,
+      pval == 0 ~ 10^(-100),
+      TRUE ~ pval
+    ),
+    missing_from_spateo = is.na(pval) | !(gene %in% spateo_res$gene)
+  ) %>%
+  arrange(pval)
+spateo.list <- -log10(spateo_rank$pval)
+names(spateo.list) <- spateo_rank$gene
 
 
 
@@ -73,17 +79,36 @@ nnsvg_res <- readRDS("../data/nnSVG_results.RDS")
 load("../data/mucosa_mgam.RData")
 load("../data/curve.RData")
 
+rank_label <- function(gene, spark_rank, nnsvg_rank, spateo_rank, gaston_rank) {
+  paste0(
+    gene, "\n",
+    "Spark rank = ", spark_rank, "   nnSVG rank = ", nnsvg_rank, "\n",
+    "Spateo rank = ", spateo_rank, "   GASTON rank = ", gaston_rank
+  )
+}
+
+gam_panel_theme <- theme(
+  strip.text = element_text(size = 8, lineheight = 0.95, margin = margin(3, 2, 3, 2)),
+  axis.title = element_text(size = 8),
+  axis.text = element_text(size = 7),
+  panel.spacing = unit(0.8, "lines")
+)
+
 rownames(Y.sub) <- old.rownames
 top5 <- order(mgam$results$peak.t, decreasing=TRUE)[1:6]
 #top5 <- result[1:5]
 for(i in top5) {
   spark_rank <- which(rownames(spark) == rownames(Y.sub)[i])
   nnsvg_rank <- which(rownames(nnsvg_res) == rownames(Y.sub)[i])
-  rownames(Y.sub)[i] <- paste0(old.rownames[i], ": ",
-                               "Spark rank = ", spark_rank, 
-                               " nnSVG rank = ", nnsvg_rank, "\n",
-                              "Spark rank = ", spark_rank, 
-                            "nnSVG rank = ", nnsvg_rank)
+  spateo_rank <- which(names(spateo.list) == rownames(Y.sub)[i])
+  gaston_rank <- which(names(gaston.list) == rownames(Y.sub)[i])
+  rownames(Y.sub)[i] <- rank_label(
+    old.rownames[i],
+    spark_rank,
+    nnsvg_rank,
+    spateo_rank,
+    gaston_rank
+  )
 }
 
 
@@ -92,10 +117,10 @@ p.peak <- plotGAMestimates(Y.sub,
                            curve_fit = fit,
                            mgam_object = mgam,
                            nrow=2) +
-  theme(strip.text=element_text(size=3.5*1.5)) +
+  gam_panel_theme +
   scale_y_sqrt()
 
-ggsave(p.peak, filename="../plots/mouse_mucosa_peak.png")
+ggsave(p.peak, filename="../plots/mouse_mucosa_peak_revise.png")
 
 rownames(Y.sub) <- old.rownames
 top5 <- order(mgam$results$range.r, decreasing=TRUE)[1:6]
@@ -103,9 +128,15 @@ top5 <- order(mgam$results$range.r, decreasing=TRUE)[1:6]
 for(i in top5) {
   spark_rank <- which(rownames(spark) == rownames(Y.sub)[i])
   nnsvg_rank <- which(rownames(nnsvg_res) == rownames(Y.sub)[i])
-  rownames(Y.sub)[i] <- paste0(old.rownames[i], ": ",
-                               "Spark rank = ", spark_rank,
-                               " nnSVG rank = ", nnsvg_rank)
+  spateo_rank <- which(names(spateo.list) == rownames(Y.sub)[i])
+  gaston_rank <- which(names(gaston.list) == rownames(Y.sub)[i])
+  rownames(Y.sub)[i] <- rank_label(
+    old.rownames[i],
+    spark_rank,
+    nnsvg_rank,
+    spateo_rank,
+    gaston_rank
+  )
 }
 
 p.range <- plotGAMestimates(Y.sub,
@@ -114,7 +145,7 @@ p.range <- plotGAMestimates(Y.sub,
                             mgam_object = mgam,
                             type="r",
                             nrow=2) +
-  theme(strip.text=element_text(size=3.5*1.5)) +
+  gam_panel_theme +
   xlim(0.3,0.7) +
   scale_y_sqrt()
 
@@ -184,8 +215,7 @@ p2 <- ggarrange(p, p.sub, ggarrange(fpc1,fpc2, nrow=1), nrow=3,
                 heights=c(2,1,1), labels=c("", "c", "d"))
 
 
-ggsave(p2, filename="../plots/mucosa_updated_gsea_and_pcs.png",
+ggsave(p2, filename="../plots/mucosa_updated_gsea_and_pcs_spateo.png",
        width= 4.78*1.5,
        height= 8.18*1.5,
        units="in")
-
