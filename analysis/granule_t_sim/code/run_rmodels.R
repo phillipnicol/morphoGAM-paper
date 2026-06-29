@@ -50,6 +50,7 @@ if(has_cli_flag("--help")) {
     "  --peak-t X,Y          Comma-separated peak.t values. Default: 1\n",
     "  --sd-r X,Y            Comma-separated sd.r values. Default: 0.5,1,2\n",
     "  --patterns A,B        Comma-separated patterns. Default: peak,gradient,nonparam\n",
+    "  --methods A,B         Comma-separated methods to run: mgam,spark,nnsvg,heartsvg. Default: all\n",
     "  --output-file PATH    Results CSV path. Default: ../data/granule_rmodel_results.csv\n",
     "  --dry-run             Print the simulation grid and exit.\n",
     sep = ""
@@ -61,7 +62,14 @@ M <- as.integer(get_cli_value("--replicates", "10"))
 peak.t <- parse_numeric_vector(get_cli_value("--peak-t", "1"))
 sd.r <- parse_numeric_vector(get_cli_value("--sd-r", "0.5,1,2"))
 patterns <- parse_character_vector(get_cli_value("--patterns", "peak,gradient,nonparam"))
+methods <- parse_character_vector(get_cli_value("--methods", "mgam,spark,nnsvg,heartsvg"))
 results.file <- get_cli_value("--output-file", file.path(data.dir, "granule_rmodel_results.csv"))
+
+valid.methods <- c("mgam", "spark", "nnsvg", "heartsvg")
+unknown.methods <- setdiff(methods, valid.methods)
+if(length(unknown.methods) > 0) {
+  stop("Unknown --methods value(s): ", paste(unknown.methods, collapse = ", "))
+}
 
 params <- expand.grid(
   pattern = patterns,
@@ -74,6 +82,7 @@ params <- expand.grid(
 
 if(has_cli_flag("--dry-run")) {
   print(params)
+  message("Methods: ", paste(methods, collapse = ", "))
   message("Would process ", nrow(params), " datasets.")
   quit(save = "no", status = 0)
 }
@@ -94,7 +103,9 @@ prepare_granule_curve <- function() {
   }
 
   colnames(xy) <- c("xcoord", "ycoord")
-  fit <- CurveFinder(xy, knn = 9)
+  #Load manual curve with t and r coord
+  load("../../principal_curves/data/granule_ground_truth.Rda")
+  fit <- ground_truth
 
   list(xy = xy, fit = fit)
 }
@@ -102,8 +113,6 @@ prepare_granule_curve <- function() {
 granule <- prepare_granule_curve()
 xy <- granule$xy
 fit <- granule$fit
-out <- fit
-
 
 set.seed(1)
 
@@ -247,11 +256,11 @@ empty_result <- function(pattern, peak.t.value, sd.r.value, replicate, in.file) 
   )
 }
 
-run_one_dataset <- function(pattern, peak.t.value, sd.r.value, replicate) {
+input_file_for <- function(pattern, peak.t.value, sd.r.value, replicate) {
   peak.t.label <- format_label(peak.t.value)
   sd.r.label <- format_label(sd.r.value)
   pattern.dir <- file.path(data.dir, paste0("granule_simulation_", pattern))
-  in.file <- file.path(
+  file.path(
     pattern.dir,
     sprintf(
       "granule_simulated_dataset_peakt_%s_sd.r_%s_rep_%02d.csv",
@@ -260,6 +269,41 @@ run_one_dataset <- function(pattern, peak.t.value, sd.r.value, replicate) {
       replicate
     )
   )
+}
+
+existing.results <- if(file.exists(results.file)) {
+  read.csv(results.file, check.names = FALSE, stringsAsFactors = FALSE)
+} else {
+  data.frame()
+}
+
+existing_result <- function(pattern, peak.t.value, sd.r.value, replicate, in.file) {
+  result <- empty_result(pattern, peak.t.value, sd.r.value, replicate, in.file)
+
+  if(nrow(existing.results) == 0) {
+    return(result)
+  }
+
+  ix <- which(
+    existing.results$pattern == pattern &
+      as.numeric(existing.results$peak.t.value) == peak.t.value &
+      as.numeric(existing.results$sd.r.value) == sd.r.value &
+      as.integer(existing.results$replicate) == replicate
+  )
+
+  if(length(ix) == 0) {
+    return(result)
+  }
+
+  old.result <- existing.results[ix[1], , drop = FALSE]
+  common.cols <- intersect(colnames(result), colnames(old.result))
+  result[common.cols] <- old.result[common.cols]
+  result$input_file <- in.file
+  result
+}
+
+run_one_dataset <- function(pattern, peak.t.value, sd.r.value, replicate) {
+  in.file <- input_file_for(pattern, peak.t.value, sd.r.value, replicate)
 
   message(
     "Testing pattern = ", pattern,
@@ -268,47 +312,104 @@ run_one_dataset <- function(pattern, peak.t.value, sd.r.value, replicate) {
     ", replicate = ", replicate
   )
 
-  result <- empty_result(pattern, peak.t.value, sd.r.value, replicate, in.file)
+  result <- existing_result(pattern, peak.t.value, sd.r.value, replicate, in.file)
   Y_sim <- read_simulated_counts(in.file)
 
-  mgam.out <- tryCatch(run_morphogam(Y_sim), error = function(e) e)
-  if(inherits(mgam.out, "error")) {
-    result$mgam_error <- conditionMessage(mgam.out)
-  } else {
-    result$mgam_rank <- mgam.out$rank
-    result$mgam_peak_t <- mgam.out$score
+  if("mgam" %in% methods) {
+    result$mgam_rank <- NA_integer_
+    result$mgam_peak_t <- NA_real_
+    result$mgam_error <- NA_character_
+
+    mgam.out <- tryCatch(run_morphogam(Y_sim), error = function(e) e)
+    if(inherits(mgam.out, "error")) {
+      result$mgam_error <- conditionMessage(mgam.out)
+    } else {
+      result$mgam_rank <- mgam.out$rank
+      result$mgam_peak_t <- mgam.out$score
+    }
   }
 
-  spark.out <- tryCatch(run_sparkx(Y_sim), error = function(e) e)
-  if(inherits(spark.out, "error")) {
-    result$spark_error <- conditionMessage(spark.out)
-  } else {
-    result$spark_rank <- spark.out$rank
-    result$spark_adjusted_pval <- spark.out$score
+  if("spark" %in% methods) {
+    result$spark_rank <- NA_integer_
+    result$spark_adjusted_pval <- NA_real_
+    result$spark_error <- NA_character_
+
+    spark.out <- tryCatch(run_sparkx(Y_sim), error = function(e) e)
+    if(inherits(spark.out, "error")) {
+      result$spark_error <- conditionMessage(spark.out)
+    } else {
+      result$spark_rank <- spark.out$rank
+      result$spark_adjusted_pval <- spark.out$score
+    }
   }
 
-  nnsvg.out <- tryCatch(run_nnsvg(Y_sim), error = function(e) e)
-  if(inherits(nnsvg.out, "error")) {
-    result$nnsvg_error <- conditionMessage(nnsvg.out)
-  } else {
-    result$nnsvg_rank <- nnsvg.out$rank
-    result$nnsvg_score <- nnsvg.out$score
-    result$nnsvg_score_col <- nnsvg.out$score_col
+  if("nnsvg" %in% methods) {
+    result$nnsvg_rank <- NA_integer_
+    result$nnsvg_score <- NA_real_
+    result$nnsvg_score_col <- NA_character_
+    result$nnsvg_error <- NA_character_
+
+    nnsvg.out <- tryCatch(run_nnsvg(Y_sim), error = function(e) e)
+    if(inherits(nnsvg.out, "error")) {
+      result$nnsvg_error <- conditionMessage(nnsvg.out)
+    } else {
+      result$nnsvg_rank <- nnsvg.out$rank
+      result$nnsvg_score <- nnsvg.out$score
+      result$nnsvg_score_col <- nnsvg.out$score_col
+    }
   }
 
-  heartsvg.out <- tryCatch(run_heartsvg(Y_sim), error = function(e) e)
-  if(inherits(heartsvg.out, "error")) {
-    result$heartsvg_error <- conditionMessage(heartsvg.out)
-  } else {
-    result$heartsvg_rank <- heartsvg.out$rank
-    result$heartsvg_score <- heartsvg.out$score
-    result$heartsvg_score_col <- heartsvg.out$score_col
+  if("heartsvg" %in% methods) {
+    result$heartsvg_rank <- NA_integer_
+    result$heartsvg_score <- NA_real_
+    result$heartsvg_score_col <- NA_character_
+    result$heartsvg_error <- NA_character_
+
+    heartsvg.out <- tryCatch(run_heartsvg(Y_sim), error = function(e) e)
+    if(inherits(heartsvg.out, "error")) {
+      result$heartsvg_error <- conditionMessage(heartsvg.out)
+    } else {
+      result$heartsvg_rank <- heartsvg.out$rank
+      result$heartsvg_score <- heartsvg.out$score
+      result$heartsvg_score_col <- heartsvg.out$score_col
+    }
   }
 
   result
 }
 
+make_key <- function(pattern, peak.t.value, sd.r.value, replicate) {
+  paste(pattern, as.numeric(peak.t.value), as.numeric(sd.r.value), as.integer(replicate), sep = "\r")
+}
+
+param.keys <- make_key(params$pattern, params$peak.t.value, params$sd.r.value, params$replicate)
+outside.existing <- data.frame()
+if(nrow(existing.results) > 0) {
+  existing.keys <- make_key(
+    existing.results$pattern,
+    existing.results$peak.t.value,
+    existing.results$sd.r.value,
+    existing.results$replicate
+  )
+  outside.existing <- existing.results[!(existing.keys %in% param.keys), , drop = FALSE]
+}
+
 results <- vector("list", nrow(params))
+for(i in seq_len(nrow(params))) {
+  in.file <- input_file_for(
+    pattern = params$pattern[i],
+    peak.t.value = params$peak.t.value[i],
+    sd.r.value = params$sd.r.value[i],
+    replicate = params$replicate[i]
+  )
+  results[[i]] <- existing_result(
+    pattern = params$pattern[i],
+    peak.t.value = params$peak.t.value[i],
+    sd.r.value = params$sd.r.value[i],
+    replicate = params$replicate[i],
+    in.file = in.file
+  )
+}
 
 for(i in seq_len(nrow(params))) {
   results[[i]] <- run_one_dataset(
@@ -319,6 +420,12 @@ for(i in seq_len(nrow(params))) {
   )
 
   results.df <- do.call(rbind, results[seq_len(i)])
+  if(i < nrow(params)) {
+    results.df <- rbind(results.df, do.call(rbind, results[(i + 1):nrow(params)]))
+  }
+  if(nrow(outside.existing) > 0) {
+    results.df <- rbind(outside.existing, results.df)
+  }
   write.csv(results.df, results.file, row.names = FALSE)
   message("Checkpointed ", i, " / ", nrow(params), " rows to ", results.file)
 }

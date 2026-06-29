@@ -19,7 +19,11 @@ prepare_granule_curve <- function() {
   }
 
   colnames(xy) <- c("xcoord", "ycoord")
-  fit <- CurveFinder(xy, knn = 9)
+
+  #Load ground truth
+  load(here::here("analysis", "principal_curves", "data", "granule_ground_truth.Rda"))
+  fit <- ground_truth
+  #fit <- CurveFinder(xy, knn = 9)
 
   dir.create(file.path("..", "data"), showWarnings = FALSE, recursive = TRUE)
   write.csv(as.data.frame(xy), file = "../data/granule_xy.csv", row.names = FALSE)

@@ -1,6 +1,8 @@
 
 setwd(here::here("analysis/principal_curves/code"))
 
+library(MorphoGAM)
+
 ## Granule
 
 xy <- readRDS("../../data/granule_slideseq.RDS")
@@ -18,6 +20,17 @@ load("../data/granule_ground_truth.Rda")
 #See knn=9
 
 fit1 <- CurveFinder(xy,knn=9)
+
+library(tidyverse)
+
+#For digitization
+
+fit1$xyt |> as.data.frame() |> filter(t < 0.001) |> arrange(desc(r)) |> select(x,y) |> head(n=1)
+fit1$xyt |> as.data.frame() |> filter(t < 0.001) |> arrange(r) |> select(x,y) |> head(n=1)
+fit1$xyt |> as.data.frame() |> filter(t > 0.98) |> arrange(desc(r)) |> select(x,y) |> head(n=1)
+fit1$xyt |> as.data.frame() |> filter(t > 0.98) |> arrange(r) |> select(x,y) |> head(n=1)
+
+
 
 fit2 <- CurveFinder(xy,knn=5)
 
