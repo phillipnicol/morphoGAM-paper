@@ -141,7 +141,7 @@ run_morphogam <- function(Y_sim) {
   mgam <- MorphoGAM::MorphoGAM(
     Y = Y_sim,
     curve.fit = fit,
-    design = y ~ s(t, bs = "cr", k = 20) + s(r),
+    design = y ~ s(t) + s(r),
     return.fx = TRUE
   )
 

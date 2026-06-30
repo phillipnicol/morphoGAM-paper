@@ -29,9 +29,18 @@ rownames(Y_sim) <- as.character(seq_len(nrow(Y_sim)))
 
 mgam <- MorphoGAM::MorphoGAM(Y_sim,
   curve.fit = fit,
-  design = y ~ s(t, bs="cr", k=20) + s(r),
+  design = y ~ s(t) + s(r),
   return.fx = TRUE
 )
 
 library(tidyverse)
 mgam$results |> arrange(desc(peak.t)) |> head()
+
+library(tidyverse)
+mgam$results |> arrange(desc(range.t)) |> head()
+
+data.frame(x=fit$xyt$x, y=fit$xyt$y, color=Y_sim[1,]) |>
+  ggplot(aes(x=x,y=y,color=color)) + geom_point() +
+  scale_color_gradient(low="navyblue", high="firebrick1") +
+  theme_bw() +
+  ggtitle("MorphoGAM (knn=9, default)")
