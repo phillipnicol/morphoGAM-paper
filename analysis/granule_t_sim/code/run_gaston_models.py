@@ -72,6 +72,11 @@ def parse_args():
         help="When resuming, rerun rows that have a nonempty gaston_error.",
     )
     parser.add_argument(
+        "--rerun-existing",
+        action="store_true",
+        help="Rerun rows in the requested grid even when successful results already exist.",
+    )
+    parser.add_argument(
         "--dry-run",
         action="store_true",
         help="Only print the datasets that would be processed.",
@@ -432,7 +437,7 @@ def main():
     else:
         all_results = pd.DataFrame()
 
-    done = existing_keys(all_results, args.rerun_failed)
+    done = set() if args.rerun_existing else existing_keys(all_results, args.rerun_failed)
     output_root.mkdir(parents=True, exist_ok=True)
 
     for i, row in enumerate(grid, start=1):

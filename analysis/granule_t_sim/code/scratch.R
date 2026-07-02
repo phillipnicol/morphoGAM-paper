@@ -18,7 +18,7 @@ load("../../principal_curves/data/granule_ground_truth.Rda")
 fit <- ground_truth
 
 setwd(here::here("analysis", "granule_t_sim/code"))
-Y_sim <- read.csv("../data/granule_simulation_peak/granule_simulated_dataset_peakt_1_sd.r_2_rep_05.csv",
+Y_sim <- read.csv("../data/granule_simulation_peak/granule_simulated_dataset_peakt_1_sd.r_2_rep_04.csv",
 row.names=1, check.names=FALSE)
 
 Y_sim <- as.matrix(Y_sim)
@@ -32,6 +32,8 @@ mgam <- MorphoGAM::MorphoGAM(Y_sim,
   design = y ~ s(t) + s(r),
   return.fx = TRUE
 )
+
+which(order(mgam$results$peak.t, decreasing=TRUE) == "1") |> print()
 
 library(tidyverse)
 mgam$results |> arrange(desc(peak.t)) |> head()
