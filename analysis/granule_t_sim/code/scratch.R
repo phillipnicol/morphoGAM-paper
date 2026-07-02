@@ -1,5 +1,5 @@
 
-
+setwd(here::here("analysis", "granule_t_sim/code"))
 #Load 
 xy <- readRDS(here::here("analysis", "data", "granule_slideseq.RDS"))
 xy <- as.matrix(xy)
@@ -12,7 +12,7 @@ if(length(outlier) > 0) {
 }
 
 colnames(xy) <- c("xcoord", "ycoord")
-fit <- CurveFinder(xy, knn = 9)
+#fit <- CurveFinder(xy, knn = 9)
 
 load("../../principal_curves/data/granule_ground_truth.Rda")
 fit <- ground_truth

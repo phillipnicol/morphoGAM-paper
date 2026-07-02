@@ -64,6 +64,10 @@ sd.r <- parse_numeric_vector(get_cli_value("--sd-r", "0.5,1,2"))
 patterns <- parse_character_vector(get_cli_value("--patterns", "peak,gradient,nonparam"))
 methods <- parse_character_vector(get_cli_value("--methods", "mgam,spark,nnsvg,heartsvg"))
 results.file <- get_cli_value("--output-file", file.path(data.dir, "granule_rmodel_results.csv"))
+if(grepl("^analysis/", results.file)) {
+  results.file <- here::here(results.file)
+}
+dir.create(dirname(results.file), showWarnings = FALSE, recursive = TRUE)
 
 valid.methods <- c("mgam", "spark", "nnsvg", "heartsvg")
 unknown.methods <- setdiff(methods, valid.methods)
