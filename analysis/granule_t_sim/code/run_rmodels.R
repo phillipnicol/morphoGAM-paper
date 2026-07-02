@@ -87,6 +87,8 @@ if(has_cli_flag("--dry-run")) {
   quit(save = "no", status = 0)
 }
 
+message("Methods selected: ", paste(methods, collapse = ", "))
+message("Output file: ", results.file)
 
 library(MorphoGAM)
 

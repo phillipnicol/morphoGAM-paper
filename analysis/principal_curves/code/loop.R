@@ -1,3 +1,5 @@
+setwd(here::here("analysis/principal_curves/code"))
+
 library(tidyverse)
 meta <- read.csv("../../data/GL2_distal_colon_cell_type_and_locations_2023.08.11.csv")
 meta <- as.data.frame(meta)
@@ -13,20 +15,26 @@ library(MorphoGAM)
 #save(fit, file="../data/loop_ground_truth.Rda")
 load("../data/loop_ground_truth.Rda")
 
-
+readable_theme <- theme_bw(base_size = 12) +
+  theme(
+    plot.title = element_text(size = 13, hjust = 0.5, margin = margin(b = 6)),
+    axis.title = element_text(size = 12),
+    axis.text = element_text(size = 10),
+    plot.margin = margin(8, 12, 8, 12)
+  )
 
 p <- xy |> ggplot(aes(x=x,y=y)) + geom_point(size=0.5) +
-  theme_bw() +
+  readable_theme +
   ggtitle("Mouse colon")
 p1 <- fit$curve.plot + guides(color="none") + ggtitle("Curve (Hand drawn)")
-p2 <- fit$coordinate.plot +guides(color="none")
+p2 <- fit$coordinate.plot + guides(color="none")
 
 
 out10 <- CurveFinder(xy,knn=10, loop=TRUE)
 p.cf.10 <- out10$curve.plot + guides(color="none") + ggtitle("MorphoGAM (knn=10)")
 
 out15 <- CurveFinder(xy,knn=14, loop=TRUE)
-p.cf.15 <- out15$curve.plot + guides(color="none")+ ggtitle("MorphoGAM (knn=14, default)")
+p.cf.15 <- out15$curve.plot + guides(color="none")+ ggtitle("MorphoGAM\n(knn=14, default)")
 
 out20 <- CurveFinder(xy,knn=20, loop=TRUE)
 p.cf.20 <- out20$curve.plot + guides(color="none")+ ggtitle("MorphoGAM (knn=20)")
@@ -47,7 +55,7 @@ p.ps.1 <- data.frame(x=xy[,1], y=xy[,2]) |>
   geom_path(data=df.line,aes(x=x,y=y,color=color),
             linewidth=1) + scale_color_gradient(low="navyblue",
                                                 high="firebrick1") +
-  theme_bw() +
+  readable_theme +
   ggtitle("princurve (Default)") +
   guides(color="none")
 
@@ -63,7 +71,7 @@ p.ps.2 <- data.frame(x=xy[,1], y=xy[,2]) |>
   geom_path(data=df.line,aes(x=x,y=y,color=color),
             linewidth=1) + scale_color_gradient(low="navyblue",
                                                 high="firebrick1") +
-  theme_bw() +
+  readable_theme +
   ggtitle("princurve (f=1/3)") +
   guides(color="none")
 
@@ -79,7 +87,7 @@ p.ps.3 <- data.frame(x=xy[,1], y=xy[,2]) |>
   geom_path(data=df.line,aes(x=x,y=y,color=color),
             linewidth=1) + scale_color_gradient(low="navyblue",
                                                 high="firebrick1") +
-  theme_bw() +
+  readable_theme +
   ggtitle("princurve (f=0.01)") +
   guides(color="none")
 
@@ -90,4 +98,4 @@ p.big <- ggarrange(ggarrange(p,p1,p2,nrow=1,ncol=3),
                    ggarrange(p.ps.1,p.ps.2,p.ps.3, nrow=1,ncol=3),
                    nrow=3)
 
-ggsave(p.big, filename="../plots/loop.png",width=8, height=8, units="in")
+ggsave(p.big, filename="../plots/loop.png", width=10, height=9, units="in", dpi=300)
