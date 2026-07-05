@@ -57,7 +57,7 @@ xy <- xy[ixs,]
 
 jxs <- which(spe$ground_truth[ixs] %in% c("Layer4"))
 
-fit <- MorphoGAM::CurveFinder(xy[jxs,], k=10)
+fit <- MorphoGAM::CurveFinder(xy[jxs,], knn=10)
 
 xyt <- fit$xyt |> arrange(t)
 ft <- cbind(xyt$f1, xyt$f2)
@@ -133,8 +133,8 @@ fit$xyt <- data.frame(x=xy[,1],y=xy[,2],t=t.full, r=r)
 Y.input <- Y.big[,ixs]
 Y.input <- Y.input[rowSums(Y.input) >= 25,]
 
-#mgam <- MorphoGAM(Y=Y.input[1:100,],curve.fit=fit,
-#                  design=y ~ s(t, bs="cr", k=10) + s(r, bs="cr", k=10))
+mgam <- MorphoGAM(Y=Y.input,curve.fit=fit,
+                  design=y ~ s(t, bs="cr", k=10) + s(r, bs="cr", k=10))
 
 beta.coef <- rep(0, nrow(Y.input))
 p.coef <- rep(0,nrow(Y.input))

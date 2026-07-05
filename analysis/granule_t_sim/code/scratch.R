@@ -18,7 +18,7 @@ load("../../principal_curves/data/granule_ground_truth.Rda")
 fit <- ground_truth
 
 setwd(here::here("analysis", "granule_t_sim/code"))
-Y_sim <- read.csv("../data/granule_simulation_peak/granule_simulated_dataset_peakt_1_sd.r_2_rep_04.csv",
+Y_sim <- read.csv("../data/granule_simulation_peak/granule_simulated_dataset_peakt_1_sd.r_2_rep_01.csv",
 row.names=1, check.names=FALSE)
 
 Y_sim <- as.matrix(Y_sim)
@@ -46,3 +46,8 @@ data.frame(x=fit$xyt$x, y=fit$xyt$y, color=Y_sim[1,]) |>
   scale_color_gradient(low="navyblue", high="firebrick1") +
   theme_bw() +
   ggtitle("MorphoGAM (knn=9, default)")
+
+
+ord <- order(mgam$results$peak.t, decreasing = TRUE, na.last = TRUE)
+gene.ids <- rownames(mgam$results)[ord]
+match("1", gene.ids)
