@@ -72,7 +72,7 @@ r.results.file <- pick_existing_file(
   file.path(
     data.dir,
     c(
-      "granule_rmodel_results_peak_only2.csv",
+      "peak_only_3.csv",
       "granule_rmodel_results_peak.csv",
       "granule_rmodel_results.csv",
       "granule_rmodel_results_peak_smoke.csv",
