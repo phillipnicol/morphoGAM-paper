@@ -24,8 +24,15 @@
 analysis/**/*.pdf
 analysis/ca3_newsim/data/gaston_outputs
 
-analysis/data/*
-!analysis/data/.gitkeep
+analysis/**/data/**
+!analysis/**/data/.gitkeep
+analysis/**/logs/**
+!analysis/**/logs/.gitkeep
+analysis/**/plots/**
+!analysis/**/plots/.gitkeep
+analysis/**/results/**
+results/**
+scripts/results/**
 
 #renv
 #Change

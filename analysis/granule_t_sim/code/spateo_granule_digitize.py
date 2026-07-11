@@ -4,7 +4,7 @@
 
 Run from analysis/granule_t_sim/code, for example:
 
-    /Users/phillipnicol/miniforge3/bin/conda run -n spateo-release-morphogam \
+    conda run -n spateo-release-morphogam \
       python spateo_granule_digitize.py
 
 The script mirrors analysis/ca3_newsim/code/spateo_ca3_digitize*.ipynb:

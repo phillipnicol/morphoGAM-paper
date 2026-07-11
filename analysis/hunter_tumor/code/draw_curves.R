@@ -16,7 +16,7 @@ ixs <- which(xy$V2 == 1)
 
 xy <- xy[ixs,c(5,6)]
 
-#info_small <- image_info(image_read("/Users/phillipnicol/Desktop/GSM4838131_Visium_A_image.tif"))
+#info_small <- image_info(image_read("../data/GSM4838131_Visium_A_image.tif"))
 #small_w <- info_small$width
 #small_h <- info_small$height
 
@@ -38,7 +38,7 @@ xy_small[,2] <- small_h - xy_small[,2]
 fit <- CurveFinderInteractive2(
   xy = xy_small,
   loop = TRUE,
-  image_path = "/Users/phillipnicol/Desktop/GSM4838132_Visium_B_image.tif",
+  image_path = "../data/GSM4838132_Visium_B_image.tif",
   flip_y = TRUE
 )
 
@@ -122,4 +122,3 @@ p1
 
 ggsave(p1, filename="../plots/sample_b_curve.png")
 ggsave(p, filename="../plots/sample_b_distance.png")
-
