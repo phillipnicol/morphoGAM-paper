@@ -10,12 +10,12 @@ library(ggplot2)
 library(grid)
 
 panel_text_theme <- theme(
-  plot.title = element_text(size = 14, face = "bold", hjust = 0.5),
-  axis.title = element_text(size = 12),
-  axis.text = element_text(size = 11),
-  legend.title = element_text(size = 11),
-  legend.text = element_text(size = 10),
-  plot.margin = margin(8, 8, 8, 8)
+  plot.title = element_text(size = 21, face = "plain", hjust = 0.5),
+  axis.title = element_text(size = 18),
+  axis.text = element_text(size = 16),
+  legend.title = element_text(size = 16),
+  legend.text = element_text(size = 15),
+  plot.margin = margin(12, 12, 12, 12)
 )
 
 spatial_text_theme <- panel_text_theme +
@@ -23,7 +23,7 @@ spatial_text_theme <- panel_text_theme +
     axis.title = element_blank(),
     axis.text = element_blank(),
     axis.ticks = element_blank(),
-    plot.caption = element_text(size = 10, hjust = 0)
+    plot.caption = element_text(size = 15, hjust = 0)
   )
 
 xy_raw <- read.csv("../data/coords_sampleA.csv", header = FALSE)
@@ -94,7 +94,7 @@ p <- ggplot() +
 
   labs(
     color = "r",
-    caption = "Grey points: non-tumor cell"
+    caption = "Grey points: non-tumor spots"
   ) +
 
   theme_bw()
@@ -102,11 +102,11 @@ p <- ggplot() +
 
 p1 <- fit$curve.plot +
   ggtitle("Fitted curve along tumor boundary") +
-  guides(color = guide_colorbar(barheight = unit(35, "pt"), barwidth = unit(5, "pt"))) +
+  guides(color = guide_colorbar(barheight = unit(52, "pt"), barwidth = unit(8, "pt"))) +
   spatial_text_theme
 p <- p +
   ggtitle("r (distance from tumor edge)") +
-  guides(color = guide_colorbar(barheight = unit(35, "pt"), barwidth = unit(5, "pt"))) +
+  guides(color = guide_colorbar(barheight = unit(52, "pt"), barwidth = unit(8, "pt"))) +
   spatial_text_theme
 
 library(ggpubr)
@@ -218,14 +218,21 @@ fit.sub <- fit
 fit.sub$xyt <- fit$xyt[qxs,]
 
 p.fpc <- plotFPCloading_temp(mgam_object=mgam.sub, curve.fit=fit.sub, type="t", L=3, num_genes=10, sign="-")
+for (i in seq_along(p.fpc$layers)) {
+  if (inherits(p.fpc$layers[[i]]$geom, "GeomTextRepel")) {
+    p.fpc$layers[[i]]$aes_params$size <- 6
+    p.fpc$layers[[i]]$geom_params$box.padding <- 0.45
+    p.fpc$layers[[i]]$geom_params$point.padding <- 0.25
+  }
+}
 p.fpc <- p.fpc +
-  ggtitle("FPC loading genes") +
+  ggtitle(NULL) +
   coord_cartesian(clip = "off") +
-  scale_x_continuous(expand = expansion(mult = c(0.03, 0.22))) +
+  scale_x_continuous(expand = expansion(mult = c(0.03, 0.3))) +
   panel_text_theme +
   theme(
-    plot.margin = margin(8, 28, 8, 8),
-    axis.title.y = element_text(margin = margin(r = 6))
+    plot.margin = margin(12, 48, 12, 12),
+    axis.title.y = element_text(margin = margin(r = 8))
   )
 
 library(gprofiler2)
@@ -419,16 +426,16 @@ p.geneset <- ggplot(
     guides(
       size = guide_legend(order = 1, title.position = "top"),
       color = guide_colorbar(order = 2, title.position = "top",
-                             barheight = unit(38, "pt"), barwidth = unit(6, "pt"))
+                             barheight = unit(56, "pt"), barwidth = unit(9, "pt"))
     ) +
     scale_x_continuous(expand = expansion(mult = c(0.02, 0.12))) +
     panel_text_theme +
     theme(
-      axis.text.y = element_text(size = 11, lineheight = 0.95),
+      axis.text.y = element_text(size = 15, lineheight = 0.95),
       legend.position = "right",
       legend.box = "vertical",
-      legend.spacing.y = unit(2, "pt"),
-      plot.margin = margin(8, 16, 8, 8)
+      legend.spacing.y = unit(4, "pt"),
+      plot.margin = margin(12, 24, 12, 12)
     )
 
 
@@ -455,7 +462,7 @@ p.hsp.raw <- data.frame(x=fit$xyt$x, y=fit$xyt$y, color=mat_r[gene_ix,]) |>
   ggplot(aes(x=x,y=y,color=color)) + geom_point() +
   scale_color_gradient(low="lightgrey", high="red") + theme_void() + 
   ggtitle(paste0(gene, " expression")) + labs(color="Raw count") +
-  guides(color = guide_colorbar(barheight = unit(35, "pt"), barwidth = unit(5, "pt"))) +
+  guides(color = guide_colorbar(barheight = unit(52, "pt"), barwidth = unit(8, "pt"))) +
   spatial_text_theme
 
 p.hsp.r <- MorphoGAM:::plotGAMestimates(mat_r,
@@ -467,23 +474,26 @@ type="r"
 p.hsp.r <- p.hsp.r +
   panel_text_theme +
   theme(
-    strip.text = element_text(size = 12),
-    axis.title.y = element_text(size = 11, margin = margin(r = 4)),
-    plot.margin = margin(8, 8, 8, 8)
+    strip.text = element_text(size = 18),
+    axis.title.y = element_text(size = 16, margin = margin(r = 6)),
+    plot.margin = margin(12, 12, 12, 12)
   )
 
+#Peak statistic
+mgam$results["hsp70l",]
+
 p.all <- ggarrange(ggarrange(p1, p, nrow=1, labels=c("a","b"),
-                              widths = c(1.05, 1),
-                              font.label = list(size = 16, face = "bold")), 
+                              widths = c(1.08, 1),
+                              font.label = list(size = 24, face = "bold")), 
                     ggarrange(p.fpc, p.geneset, labels=c("c","d"), nrow=1,
-                              widths = c(1, 1.65),
-                              font.label = list(size = 16, face = "bold")),
+                              widths = c(1.05, 1.8),
+                              font.label = list(size = 24, face = "bold")),
                     ggarrange(p.hsp.raw, p.hsp.r, nrow=1, labels=c("e","f"),
-                              widths = c(1.05, 1),
-                              font.label = list(size = 16, face = "bold")),
-                    nrow=3,ncol=1, heights=c(1.18, 1.12, 1),
+                              widths = c(1.08, 1),
+                              font.label = list(size = 24, face = "bold")),
+                    nrow=3,ncol=1, heights=c(1.18, 1.2, 1.05),
                     align = "hv"
 )
 
 ggsave(p.all, filename="../plots/sample_A_figure.png",
-       width=13.5, height=12.5, units="in", dpi=300)
+       width=16.5, height=15, units="in", dpi=300)

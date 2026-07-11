@@ -1,3 +1,5 @@
+#Temporary version of plotFPCloading
+
 plotFPCloading_temp <- 
 function(mgam_object,
          curve.fit,

@@ -1,4 +1,6 @@
-morphoGAM_test <- function(Y,
+#This code extends MorphoGAM to add a by.t into the GAM 
+
+morphoGAM_byt <- function(Y,
                            curve.fit,
                            design,
                            by.t,

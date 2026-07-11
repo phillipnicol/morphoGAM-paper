@@ -123,7 +123,7 @@ p1 <- fit$curve.plot + ggtitle("Fitted curve along tumor boundary")
 p <- p + ggtitle("Second coordinate (distance from tumor edge)")
 
 fit.full <- fit
-save(fit.full, file="../data/sample_A_fit_full.RData")
+save(fit.full, file="../data/sample_A_fit_full2.RData")
 
 
 
@@ -174,7 +174,8 @@ fit$xyt <- fit$xyt[kxs,]
 mat_r <- mat_r[,kxs]
 
 
-data.frame(x=xy_small[,1], y=xy_small[,2], color=gene) |>
+gene <- mat_r["hsp70l",]
+data.frame(x=fit$xyt$x, y=fit$xyt$y, color=gene) |>
   ggplot(aes(x=x,y=y,color=color)) + geom_point() +
   scale_color_gradient(low="lightgrey", high="red") + theme_void()
 
@@ -200,7 +201,7 @@ mgam <- morphoGAM_test(Y=mat_r,
                   curve.fit = fit,
                   design = y ~ s(t, bs="cc", by=by.t) + s(r))
 
-save(mgam, file="../data/sample_A_mgam_results.RData")
+save(mgam, file="../data/sample_A_mgam_results2.RData")
 
 library(tidyverse)
 library(RColorBrewer)
