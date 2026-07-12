@@ -3,6 +3,8 @@ setwd(here::here("analysis/principal_curves/code"))
 
 ## Granule
 
+library(MorphoGAM)
+
 xy <- readRDS("../../data/granule_slideseq.RDS")
 
 ## Prune outlier
@@ -16,6 +18,10 @@ library(MorphoGAM)
 ground_truth <- CurveFinderInteractive(xy, loop=FALSE)
 
 save(ground_truth, file = "../data/granule_ground_truth.Rda")
+
+
+setwd(here::here("analysis/principal_curves/code"))
+load("../data/granule_ground_truth.Rda")
 
 #save curve and fitted coordinate
 p <- ggarrange(ground_truth$curve.plot, 

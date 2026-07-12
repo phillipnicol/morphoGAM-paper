@@ -97,6 +97,7 @@ gaston.results.file <- pick_existing_file(
   file.path(
     data.dir,
     c(
+      "granule_gaston_peak.csv",
       "granule_gaston_model_results_peak.csv",
       "granule_gaston_model_results.csv"
     )

@@ -81,6 +81,7 @@ saveRDS(res1, file = "../data/roll1_intercept_model.RDS")
 saveRDS(res2, file = "../data/roll2_intercept_model.RDS")
 saveRDS(res3, file = "../data/roll3_intercept_model.RDS")
 
+setwd(here::here("analysis/merfish_swissroll/code"))
 
 res1 <- readRDS("../data/roll1_intercept_model.RDS")
 res2 <- readRDS("../data/roll2_intercept_model.RDS")
@@ -119,7 +120,11 @@ up.genes <- beta.combine |> mutate(max.min = pmin(beta1, beta2, beta3)) |>
 #bottom.genes <- df |> mutate(min.max = beta1 + beta2 + beta3) |>
 #  arrange(min.max) |> head(n=20) |> select(gene)
 
+#Load Y1 
+Y1 <- Matrix::readMM(file="../data/061923_D9_m2_Swiss_fibroblast_counts.mtx")
+meta1 <- readRDS(file="../data/061923_D9_m2_Swiss_fibroblast_meta.RDS")
 fxs.t <- Y1 |> as.matrix()
+rownames(fxs.t) <- rownames(beta.combine)
 ### Roll 1
 
 indic <- rep(0, length(fit1$xyt$t))
@@ -130,10 +135,10 @@ fxs.t[,indic == 0] <-0
 fxs.t[,indic == 1] <- res1[,1]
 
 
-df <- t(fxs.t[up.genes,]) |>
-  as.data.frame() |>
-  mutate(t = fit1$xyt$t) |>
-  pivot_longer(-t)
+df <- t(fxs.t[up.genes$gene,]) |>
+    as.data.frame() |>
+    mutate(t = fit1$xyt$t) |>
+    pivot_longer(-t)
 
 # Arrange and identify horizontal segments
 segments <- df %>%
@@ -269,9 +274,30 @@ ggsave(p.pos, filename="../plots/ulcerated_intercept_pos.png",
 
 #gene.names <- c("Il11", "Mmp3", "Mmp10", "Grem1", "Il6")
 
-gene.names <- c("Mmp3", "Timp1", "Mmp10", "Il11", "Grem1")
+### PLOT STARTS HERE
 
+res1 <- readRDS("../data/roll1_intercept_model.RDS")
+res2 <- readRDS("../data/roll2_intercept_model.RDS")
+res3 <- readRDS("../data/roll3_intercept_model.RDS")
+#Load fit1, fit2, fit3 
+load("../data/061923_D9_m2_Swiss_fibroblast.RData")
+fit1 <- fit
+
+load("../data/curve_d9_m5_080823.RData")
+fit2 <- fit
+
+load("../data/080823_D9_m13_Swiss_fibroblast.RData")
+fit3 <- fit
+
+
+gene.names <- c("Mmp3", "Timp1", "Mmp10", "Il11", "Grem1")
+#Load Y1 
+Y1 <- Matrix::readMM(file="../data/061923_D9_m2_Swiss_fibroblast_counts.mtx")
+meta1 <- readRDS(file="../data/061923_D9_m2_Swiss_fibroblast_meta.RDS")
+fxs.t <- Y1 |> as.matrix()
+rownames(fxs.t) <- rownames(beta.combine)
 Y1 <- as.matrix(Y1)
+rownames(Y1) <- rownames(beta.combine)
 nmed <- median(colSums(Y1))
 Y1.dn <- sweep(as.matrix(Y1), MARGIN = 2, FUN = "/", STATS = colSums(Y1)/nmed)
 fxs.t <- Y1

@@ -26,7 +26,7 @@ Y.sub <- Y[,meta.sub$X]
 
 
 gene.1 <- which(rownames(Y.sub) == "Ddx58")
-gene.2 <- which(rownames(Y.sub) == "Ephb4")
+gene.2 <- which(rownames(Y.sub) == "Apob")
 
 #Plot these two
 #expr <- t(Y.sub[c(gene.1,gene.2),]) |>
@@ -51,9 +51,9 @@ expr <- t(Y.s[c(gene.1,gene.2),]) |>
   as.data.frame() |>
   mutate(x=meta.sub$x, y=meta.sub$y) |>
   pivot_longer(cols=-c(x,y))
-expr$name <- factor(expr$name, levels=c("Ephb4","Ddx58"))
+expr$name <- factor(expr$name, levels=c("Ddx58","Apob"))
 
-low <- "grey75"
+low <- "grey85"
 high <- "firebrick"
 
 plot1 <- expr |> ggplot(aes(x=x,y=y,color=value,size=value,
