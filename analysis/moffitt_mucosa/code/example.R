@@ -312,14 +312,14 @@ p.gene1r <- data.frame(x=fit$xyt$r, y=gene.1) |>
   ggplot(aes(x=x,y=y)) +
   geom_jitter(width=0,height=0.1,size=0.5) +
   theme_bw() +
-  xlim(0.3,1) +
+  xlim(0.2,1) +
   xlab("r") + ylab("Count") + ggtitle("Ddx58")
 
 p.gene2 <- data.frame(x=fit$xyt$r, y=gene.2) |>
   ggplot(aes(x=x,y=y)) +
   geom_jitter(width=0,height=0.1,size=0.5) +
   theme_bw() +
-  xlim(0.3,1) +
+  xlim(0.2,1) +
   xlab("r") + ylab("Count") + ggtitle("Apob")
 
 
@@ -329,9 +329,10 @@ p.gene2t <- data.frame(x=fit$xyt$t, y=gene.2) |>
   theme_bw() +
   xlab("t") + ylab("Count") + ggtitle("Apob")
 
+point.size <- 0.25
 p.demo <- ggarrange(ggarrange(fit$curve.plot + ggtitle("Fitted curve") + guides(color="none"),
-                              fit$coordinate.plot + guides(color="none") + ggtitle("First coordinate (t)"),
-                              fit$residuals.plot + guides(color="none") + ggtitle("Second coordinate (r)"), nrow=1,ncol=3,
+                              fit$coordinate.plot + guides(color="none") + ggtitle("First coordinate (t)") + geom_point(size=point.size),
+                              fit$residuals.plot + guides(color="none") + ggtitle("Second coordinate (r)") + geom_point(size=point.size), nrow=1,ncol=3,
                               labels=c("a","b","c")),
                     ggarrange(p.gene1, p.gene2,
                               p.gene2t, p.gene1r,

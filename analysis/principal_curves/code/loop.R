@@ -30,11 +30,13 @@ p1 <- fit$curve.plot + guides(color="none") + ggtitle("Curve (Hand drawn)")
 p2 <- fit$coordinate.plot + guides(color="none")
 
 
-out10 <- CurveFinder(xy,knn=10, loop=TRUE)
-p.cf.10 <- out10$curve.plot + guides(color="none") + ggtitle("MorphoGAM (knn=10)")
+out10 <- CurveFinder(xy,knn=7, loop=TRUE)
+p.cf.10 <- out10$curve.plot + guides(color="none") + ggtitle("MorphoGAM (knn=7)")
 
 out15 <- CurveFinder(xy,knn=14, loop=TRUE)
-p.cf.15 <- out15$curve.plot + guides(color="none")+ ggtitle("MorphoGAM\n(knn=14, default)")
+p.cf.15 <- out15$curve.plot + guides(color="none") +
+  ggtitle("MorphoGAM (knn = 14, default)") +
+  theme(plot.title = element_text(size = 10))
 
 out20 <- CurveFinder(xy,knn=20, loop=TRUE)
 p.cf.20 <- out20$curve.plot + guides(color="none")+ ggtitle("MorphoGAM (knn=20)")
@@ -98,4 +100,6 @@ p.big <- ggarrange(ggarrange(p,p1,p2,nrow=1,ncol=3),
                    ggarrange(p.ps.1,p.ps.2,p.ps.3, nrow=1,ncol=3),
                    nrow=3)
 
-ggsave(p.big, filename="../plots/loop.png", width=10, height=9, units="in", dpi=300)
+ggsave(p.big, filename="../plots/loop.png", width=10, height=9, units="in")
+
+

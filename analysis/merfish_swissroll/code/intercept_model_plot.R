@@ -146,6 +146,7 @@ roll2.intervals <- list(c(0.25, 0.6), c(0.78, 0.8), c(0.88, 0.9))
 roll3.intervals <- list(c(0.3, 0.6), c(0.63, 0.75), c(0.9, 0.94))
 
 # 061923_D9_m2_Swiss is roll 1.
+#fit1 <- load_fit("../data/curve_d9_061923.RData")
 fit1 <- load_fit("../data/061923_D9_m2_Swiss_fibroblast.RData")
 Y1 <- Matrix::readMM("../data/061923_D9_m2_Swiss_fibroblast_counts.mtx")
 rownames(Y1) <- gene_names
@@ -154,9 +155,9 @@ p1 <- count_plot(df1, roll1.intervals)
 rm(Y1, df1)
 gc()
 
-# curve_d9_m5_080823 is roll 2.
-fit2 <- load_fit("../data/curve_d9_m5_080823.RData")
-Y2 <- Matrix::t(Matrix::readMM("../data/080823_d9_m5.mtx"))
+# 080823_D9_m5_Swiss_fibroblast matches the previous roll 2 plot.
+fit2 <- load_fit("../data/080823_D9_m5_Swiss_fibroblast.RData")
+Y2 <- Matrix::readMM("../data/080823_D9_m5_Swiss_fibroblast_counts.mtx")
 rownames(Y2) <- gene_names
 df2 <- plot_counts_for_roll(Y2, fit2, res2, roll2.intervals, gene.names)
 p2 <- count_plot(df2, roll2.intervals)

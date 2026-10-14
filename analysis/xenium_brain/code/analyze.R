@@ -42,6 +42,8 @@ xy <- xy[-outlier,]
 
 library(MorphoGAM)
 
+#fit <- MorphoGAM::CurveFinder(xy,knn="auto")
+#Yields k = 10
 fit <- CurveFinder(xy,knn=10)
 
 Y <- Y[,cx]
